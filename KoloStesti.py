@@ -7,18 +7,22 @@ import PySimpleGUI as grafika
 list_her = ["Apex Legends", "Overwatch", "PUBG: Battlegrounds", "Payday 2", "League of Legends",
             "Counter Strike: Global Offensive", "Fortnite", "Programovani kola stesti", "Grant Treft Auto V", "Lost Ark"]
 
+# menici se text
 output=grafika.Text("\nDefault")
 
+# rozlozeni okna
 layout = [[grafika.Text("Roztočte kolo štestí:")], [grafika.Button("ZATOČ")], [output]]
 
+# vlastnosti okna
 window = grafika.Window(title="Gamerský kolo", layout=layout, margins=(500, 250))
 
 
-# Create an event loop
+# beh kola
 while True:
+    # precteni okna
     event, values = window.read()
-    # End program if user closes window or
-    # presses the OK button
+
+    # zmacknuti tlacitka ZATOC
     if event == "ZATOČ":
         #odpocet
         for i in range(3,0, -1):
@@ -26,6 +30,7 @@ while True:
             window.refresh()
             time.sleep(1)
 
+        # napeti
         output.update("Hra pro dnesni den je...")
         window.refresh()
         time.sleep(3)
@@ -33,5 +38,6 @@ while True:
         # vybrani viteze
         output.update(random.choice(list_her))
 
+    # zavreni okna
     if event == grafika.WIN_CLOSED:
         break    
