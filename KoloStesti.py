@@ -9,31 +9,39 @@ list_her = ["Apex Legends", "Overwatch", "PUBG: Battlegrounds", "Payday 2", "Lea
 
 list_her_fanda = ["Overwatch", "Payday 2", "Counter Strike: Global Offensive", "Grant Treft Auto V", "Fall guys", "League of Legends"]
 
+
+# barvy
 back = "Black"
 front = "White"
 
-# menici se text
-output=grafika.Text("", text_color=front, background_color=back, font = ("Arial", 18))
+# font
+nas_font = ("Arial", 18)
 
-apex = grafika.Text(list_her[0], text_color=front, font = ("Arial", 18), background_color=back)
-ow = grafika.Text(list_her[1], text_color=front, font = ("Arial", 18), background_color=back)
-pubg = grafika.Text(list_her[2], text_color=front, font = ("Arial", 18), background_color=back)
-payday2 = grafika.Text(list_her[3], text_color=front, font = ("Arial", 18), background_color=back)
-lol = grafika.Text(list_her[4], text_color=front, font = ("Arial", 18), background_color=back)
-csgo = grafika.Text(list_her[5], text_color=front, font = ("Arial", 18), background_color=back)
-fortnite = grafika.Text(list_her[6], text_color=front, font = ("Arial", 18), background_color=back)
-programovani = grafika.Text(list_her[7], text_color=front, font = ("Arial", 18), background_color=back)
-lost_ark = grafika.Text(list_her[8], text_color=front, font = ("Arial", 18), background_color=back)
-fall_guys = grafika.Text(list_her[9], text_color=front, font = ("Arial", 18), background_color=back)
+# texty
+output=grafika.Text("", text_color=front, background_color=back, font = nas_font)
+
+apex = grafika.Text(list_her[0], text_color=front, font = nas_font, background_color=back)
+ow = grafika.Text(list_her[1], text_color=front, font = nas_font, background_color=back)
+pubg = grafika.Text(list_her[2], text_color=front, font = nas_font, background_color=back)
+payday2 = grafika.Text(list_her[3], text_color=front, font = nas_font, background_color=back)
+lol = grafika.Text(list_her[4], text_color=front, font = nas_font, background_color=back)
+csgo = grafika.Text(list_her[5], text_color=front, font = nas_font, background_color=back)
+fortnite = grafika.Text(list_her[6], text_color=front, font = nas_font, background_color=back)
+programovani = grafika.Text(list_her[7], text_color=front, font = nas_font, background_color=back)
+lost_ark = grafika.Text(list_her[8], text_color=front, font = nas_font, background_color=back)
+fall_guys = grafika.Text(list_her[9], text_color=front, font = nas_font, background_color=back)
 
 list_her_grafika = [apex, ow, pubg, payday2, lol, csgo, fortnite, programovani, lost_ark, fall_guys]
 
+# buttony
+zatoc = grafika.Button("ZATOČ", button_color = 'Green', font = nas_font , mouseover_colors='DarkGreen')
+fanda = grafika.Button("FANDA", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen')
+
 # rozlozeni okna
-layout = [[grafika.Text("Roztočte kolo štestí:")], [grafika.Button("ZATOČ")],[grafika.Button("FANDA")], [apex], [ow], [pubg], [payday2], [lol], [csgo], [fortnite], [programovani], [lost_ark], [fall_guys], [output]]
+layout = [[apex], [ow], [pubg], [payday2], [lol], [csgo], [fortnite], [programovani], [lost_ark], [fall_guys], [output],[zatoc,fanda]]
 
 # vlastnosti okna
-window = grafika.Window(title="Gamerský kolo", layout=layout, margins=(500, 250), background_color="Black")
-
+window = grafika.Window(title="Gamerský kolo", layout=layout, margins=(500, 250), background_color="Black", use_default_focus=False)
 
 # beh kola
 while True:
@@ -51,7 +59,7 @@ while True:
 
         while not koncime:
             for hra_zelena in list_her_grafika:
-                hra_zelena.update(text_color='Green')
+                hra_zelena.update(text_color='Lime')
                 if interval != 0.1:
                     hra_cervena.update(text_color='White')
                 hra_cervena = hra_zelena
