@@ -3,7 +3,19 @@ import random
 import time
 import PySimpleGUI as grafika
 
+
+def MakeAllVisible(list_konkretni, window):
+    for hra in list_konkretni:
+        window[hra.Get()].Update(visible = True)
+
+def Vybel(list_konkretni):
+    for hra_bila in list_konkretni:
+        hra_bila.update(text_color='White')
+
 def Toceni(list_konkretni, kc):
+
+    Vybel(list_konkretni)
+
     interval = 0.01
     konecny_cas = kc
     vyherni_hra = random.choice(list(list_konkretni))
@@ -29,8 +41,9 @@ def Toceni(list_konkretni, kc):
     window.refresh()
 
 # list her, ktere pripadaji v uvahu
-list_her = ["Apex Legends", "Overwatch", "PUBG: Battlegrounds", "Payday 2", "Counter Strike: Global Offensive", 
-            "Fortnite", "Programovani kola stesti", "Lost Ark", "Fall Guys", "League of Legends", "Grant Treft Auto V"]
+# TODO tuples
+list_her = ["Apex Legends", "PUBG: Battlegrounds", "Payday 2", "Counter Strike: Global Offensive", 
+            "Fortnite", "Programovani kola stesti", "Lost Ark", "Fall Guys", "Overwatch", "League of Legends", "Grant Treft Auto V"]
 
 # barvy
 back = "Black"
@@ -59,7 +72,6 @@ layout = []
 for hra in list_her_grafika:
     layout.append([hra])
 
-
 # pridej buttony
 layout.append([output])
 layout.append([zatoc,fanda])
@@ -74,14 +86,17 @@ while True:
 
     # zmacknuti tlacitka ZATOC
     if event == "ZATOČ":
-        list_nas = list_her_grafika
-        list_nas.pop()
-
+        MakeAllVisible(list_her_grafika, window)
         window["Grant Treft Auto V"].Update(visible = False)
+
+        list_nas = list(list_her_grafika)
+        list_nas.pop()
 
         Toceni(list_nas, random.uniform(0.3, 0.8))   
 
     elif event == "FANDA":
+        window["Grant Treft Auto V"].Update(visible = True)
+
         list_fanda = []
         jedemeListFanda = False
 
