@@ -3,12 +3,34 @@ import random
 import time
 import PySimpleGUI as grafika
 
+def Toceni(list_konkretni, kc):
+    interval = 0.01
+    konecny_cas = kc
+    vyherni_hra = random.choice(list(list_konkretni))
+    hra_bila = list_konkretni[0]
+    koncime = False
+
+    while not koncime:
+        for hra_zelena in list_konkretni:
+            hra_zelena.update(text_color='Lime')
+            if interval != 0.01:
+                hra_bila.update(text_color='White')
+            hra_bila = hra_zelena
+            window.refresh()
+            time.sleep(interval)
+            if interval > konecny_cas and hra_bila == vyherni_hra:
+                koncime = True
+                break
+
+            interval+=0.02    
+
+    # vybrani viteze
+    output.update("\nUžijte si " + vyherni_hra.Get())
+    window.refresh()
+
 # list her, ktere pripadaji v uvahu
-list_her = ["Apex Legends", "Overwatch", "PUBG: Battlegrounds", "Payday 2", "League of Legends",
-            "Counter Strike: Global Offensive", "Fortnite", "Programovani kola stesti", "Lost Ark", "Fall guys"]
-
-list_her_fanda = ["Overwatch", "Payday 2", "Counter Strike: Global Offensive", "Grant Treft Auto V", "Fall guys", "League of Legends"]
-
+list_her = ["Apex Legends", "Overwatch", "PUBG: Battlegrounds", "Payday 2", "Counter Strike: Global Offensive", 
+            "Fortnite", "Programovani kola stesti", "Lost Ark", "Fall Guys", "League of Legends", "Grant Treft Auto V"]
 
 # barvy
 back = "Black"
@@ -20,25 +42,27 @@ nas_font = ("Arial", 18)
 # texty
 output=grafika.Text("", text_color=front, background_color=back, font = nas_font)
 
-apex = grafika.Text(list_her[0], text_color=front, font = nas_font, background_color=back)
-ow = grafika.Text(list_her[1], text_color=front, font = nas_font, background_color=back)
-pubg = grafika.Text(list_her[2], text_color=front, font = nas_font, background_color=back)
-payday2 = grafika.Text(list_her[3], text_color=front, font = nas_font, background_color=back)
-lol = grafika.Text(list_her[4], text_color=front, font = nas_font, background_color=back)
-csgo = grafika.Text(list_her[5], text_color=front, font = nas_font, background_color=back)
-fortnite = grafika.Text(list_her[6], text_color=front, font = nas_font, background_color=back)
-programovani = grafika.Text(list_her[7], text_color=front, font = nas_font, background_color=back)
-lost_ark = grafika.Text(list_her[8], text_color=front, font = nas_font, background_color=back)
-fall_guys = grafika.Text(list_her[9], text_color=front, font = nas_font, background_color=back)
+list_her_grafika = []
 
-list_her_grafika = [apex, ow, pubg, payday2, lol, csgo, fortnite, programovani, lost_ark, fall_guys]
+# vytvor list textu z listu her
+for hra in list_her:
+    list_her_grafika.append(grafika.Text(hra, text_color=front, font = nas_font, background_color=back, key=hra))
 
 # buttony
 zatoc = grafika.Button("ZATOČ", button_color = 'Green', font = nas_font , mouseover_colors='DarkGreen')
 fanda = grafika.Button("FANDA", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen')
 
-# rozlozeni okna
-layout = [[apex], [ow], [pubg], [payday2], [lol], [csgo], [fortnite], [programovani], [lost_ark], [fall_guys], [output],[zatoc,fanda]]
+
+# vytvor layout z danych her
+layout = []
+
+for hra in list_her_grafika:
+    layout.append([hra])
+
+
+# pridej buttony
+layout.append([output])
+layout.append([zatoc,fanda])
 
 # vlastnosti okna
 window = grafika.Window(title="Gamerský kolo", layout=layout, margins=(500, 250), background_color="Black", use_default_focus=False)
@@ -50,45 +74,29 @@ while True:
 
     # zmacknuti tlacitka ZATOC
     if event == "ZATOČ":
+        list_nas = list_her_grafika
+        list_nas.pop()
 
-        interval = 0.01
-        konecny_cas = 0.5
-        vyherni_hra = random.choice(list_her_grafika)
-        hra_cervena = apex
-        koncime = False
+        window["Grant Treft Auto V"].Update(visible = False)
 
-        while not koncime:
-            for hra_zelena in list_her_grafika:
-                hra_zelena.update(text_color='Lime')
-                if interval != 0.1:
-                    hra_cervena.update(text_color='White')
-                hra_cervena = hra_zelena
-                window.refresh()
-                time.sleep(interval)
-                if interval > konecny_cas and hra_cervena == vyherni_hra:
-                    koncime = True
-                    break
+        Toceni(list_nas, random.uniform(0.3, 0.8))   
 
-            interval*=2    
-
-        # vybrani viteze
-        output.update("\nUžijte si " + vyherni_hra.Get())
-        window.refresh()
     elif event == "FANDA":
-        #odpocet
-        for i in range(3,0, -1):
-            output.update(i)
-            window.refresh()
-            time.sleep(1)
+        list_fanda = []
+        jedemeListFanda = False
 
-        # napeti
-        output.update("Hra pro dnesni den je...")
+        for hra in list_her_grafika:
+            if (jedemeListFanda or hra.Get() == "Fall Guys"):
+                list_fanda.append(hra)
+                jedemeListFanda = True
+            else:
+                window[hra.Get()].Update(visible = False)
+
         window.refresh()
-        time.sleep(3)
 
-        # vybrani viteze
-        output.update(random.choice(list_her_fanda))
+        Toceni(list_fanda, random.uniform(0.3, 0.5))
+
     # zavreni okna
-    if event == grafika.WIN_CLOSED:
+    elif event == grafika.WIN_CLOSED:
         break
 
