@@ -2,7 +2,10 @@
 import random
 import time
 import PySimpleGUI as grafika
+from datetime import date
 
+# absultni cesta k logum
+cesta_logy = r"C:\Users\Sviha\Desktop\apps\Programming\KoloStesti\KoloStesti\Logs.txt"
 
 def MakeAllVisible(list_konkretni, window):
     for hra in list_konkretni:
@@ -40,6 +43,8 @@ def Toceni(list_konkretni, kc):
     output.update("\nUžijte si " + vyherni_hra.Get())
     window.refresh()
 
+    return vyherni_hra
+
 # list her, ktere pripadaji v uvahu
 # TODO tuples
 list_her = ["Apex Legends", "PUBG: Battlegrounds", "Payday 2", "Counter Strike: Global Offensive", 
@@ -53,7 +58,8 @@ front = "White"
 nas_font = ("Arial", 18)
 
 # texty
-output=grafika.Text("", text_color=front, background_color=back, font = nas_font)
+output = grafika.Text("", text_color=front, background_color=back, font = nas_font)
+minula_hra = grafika.Text("Jak dopadla minulá hra?", text_color=front, background_color=back, font = nas_font)
 
 list_her_grafika = []
 
@@ -64,6 +70,8 @@ for hra in list_her:
 # buttony
 zatoc = grafika.Button("ZATOČ", button_color = 'Green', font = nas_font , mouseover_colors='DarkGreen')
 fanda = grafika.Button("FANDA", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen')
+w = grafika.Button("W", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen')
+l = grafika.Button("L", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen')
 
 
 # vytvor layout z danych her
@@ -75,9 +83,17 @@ for hra in list_her_grafika:
 # pridej buttony
 layout.append([output])
 layout.append([zatoc,fanda])
+layout.append([minula_hra])
+layout.append([w,l])
 
 # vlastnosti okna
 window = grafika.Window(title="Gamerský kolo", layout=layout, margins=(500, 250), background_color="Black", use_default_focus=False)
+
+# databaze
+database = open(cesta_logy, "at")
+
+# vyherce
+konecna_vyherni_hra = list_her_grafika[0]
 
 # beh kola
 while True:
@@ -92,7 +108,7 @@ while True:
         list_nas = list(list_her_grafika)
         list_nas.pop()
 
-        Toceni(list_nas, random.uniform(0.3, 0.8))   
+        konecna_vyherni_hra = Toceni(list_nas, random.uniform(0.3, 0.8))
 
     elif event == "FANDA":
         window["Grant Treft Auto V"].Update(visible = True)
@@ -109,9 +125,14 @@ while True:
 
         window.refresh()
 
-        Toceni(list_fanda, random.uniform(0.3, 0.5))
-
+        konecna_vyherni_hra = Toceni(list_fanda, random.uniform(0.3, 0.5))
+    elif event == "W":
+        database.write("W\n")
+    elif event == "L":
+        database.write("L\n")
     # zavreni okna
     elif event == grafika.WIN_CLOSED:
+        database.write(date.today().strftime("%d.%m.%Y") + " " + konecna_vyherni_hra.Get() + " ")
+        database.close()
         break
 
