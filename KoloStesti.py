@@ -3,6 +3,7 @@ import random
 import time
 import PySimpleGUI as grafika
 from datetime import date
+import discord_bot
 
 # absultni cesta k logum
 cesta_logy = r"REPLACED_PATH\KoloStesti\Logs.txt"
@@ -59,7 +60,9 @@ nas_font = ("Arial", 18)
 
 # texty
 output = grafika.Text("", text_color=front, background_color=back, font = nas_font)
-minula_hra = grafika.Text("Jak dopadla minulá hra?", text_color=front, background_color=back, font = nas_font)
+minula_hra = grafika.Text("\nJak dopadla minulá hra?", text_color=front, background_color=back, font = nas_font)
+winlose = grafika.Text("", text_color=front, background_color=back, font = nas_font)
+
 
 list_her_grafika = []
 
@@ -68,10 +71,10 @@ for hra in list_her:
     list_her_grafika.append(grafika.Text(hra, text_color=front, font = nas_font, background_color=back, key=hra))
 
 # buttony
-zatoc = grafika.Button("ZATOČ", button_color = 'Green', font = nas_font , mouseover_colors='DarkGreen')
-fanda = grafika.Button("FANDA", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen')
-w = grafika.Button("W", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen')
-l = grafika.Button("L", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen')
+zatoc = grafika.Button("ZATOČ", button_color = 'Green', font = nas_font , mouseover_colors='DarkGreen', size = (7,0))
+fanda = grafika.Button("FANDA", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
+w = grafika.Button("W", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
+l = grafika.Button("L", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 
 
 # vytvor layout z danych her
@@ -85,9 +88,10 @@ layout.append([output])
 layout.append([zatoc,fanda])
 layout.append([minula_hra])
 layout.append([w,l])
+layout.append([winlose])
 
 # vlastnosti okna
-window = grafika.Window(title="Gamerský kolo", layout=layout, margins=(500, 250), background_color="Black", use_default_focus=False)
+window = grafika.Window(title="Gamerský kolo", layout=layout, margins=(400, 200), background_color="Black", use_default_focus=False)
 
 # databaze
 database = open(cesta_logy, "at")
@@ -128,11 +132,14 @@ while True:
         konecna_vyherni_hra = Toceni(list_fanda, random.uniform(0.3, 0.5))
     elif event == "W":
         database.write("W\n")
+        winlose.update("\n YOU ARE THE BEST" )
     elif event == "L":
         database.write("L\n")
+        winlose.update("\n YOU SUCK" )
     # zavreni okna
     elif event == grafika.WIN_CLOSED:
         database.write(date.today().strftime("%d.%m.%Y") + " " + konecna_vyherni_hra.Get() + " ")
         database.close()
+        discord_bot.StartBot(konecna_vyherni_hra.Get())
         break
 
