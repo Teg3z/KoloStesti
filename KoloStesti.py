@@ -6,7 +6,7 @@ from datetime import date
 import discord_bot
 
 # absultni cesta k logum
-cesta_logy = r"C:\Users\Sviha\Desktop\apps\Programming\KoloStesti\KoloStesti\Logs.txt"
+CESTA_LOGY = r"C:\Users\Sviha\Desktop\apps\Programming\KoloStesti\KoloStesti\Logs.txt"
 
 def MakeAllVisible(list_konkretni, window):
     for hra in list_konkretni:
@@ -94,7 +94,7 @@ layout.append([winlose])
 window = grafika.Window(title="Gamerský kolo", layout=layout, margins=(400, 200), background_color="Black", use_default_focus=False)
 
 # databaze
-database = open(cesta_logy, "at")
+database = open(CESTA_LOGY, "at")
 
 # vyherce
 konecna_vyherni_hra = list_her_grafika[0]
@@ -140,6 +140,7 @@ while True:
     elif event == grafika.WIN_CLOSED:
         database.write(date.today().strftime("%d.%m.%Y") + " " + konecna_vyherni_hra.Get() + " ")
         database.close()
+
         discord_bot.StartBot(konecna_vyherni_hra.Get())
         break
 

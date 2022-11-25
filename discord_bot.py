@@ -1,5 +1,7 @@
 import discord
 
+BOT_KLIC_PATH = r"C:\Users\Sviha\Desktop\apps\Programming\KoloStesti\KoloStesti\bot_klic.txt"
+
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -15,5 +17,8 @@ async def on_ready():
 def StartBot(vyherni_h):
   global vyherni_hra
   vyherni_hra = vyherni_h
-  client.run("MTA0NDU2ODA0ODc4NDM5NjM3OA.GAqm82.ggkQ8g38YsPCYj0eiNDud357C1KaIhr0Kq6oGc")
+  bot_klic_file = open(BOT_KLIC_PATH, "rt")
+  bot_klic = bot_klic_file.read()
+
+  client.run(bot_klic)
 
