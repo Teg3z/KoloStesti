@@ -12,7 +12,7 @@ async def on_ready():
   print("We have logged in as {0.user}".format(client))
   await client.get_channel(409058658190753794).send("Jdeme hrát " + vyherni_hra + ", chce se někdo přidat?")
   # anaconda problem
-  exit()
+  await client.close()
 
 def StartBot(vyherni_h):
   global vyherni_hra
