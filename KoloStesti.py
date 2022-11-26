@@ -4,9 +4,62 @@ import time
 import PySimpleGUI as grafika
 from datetime import date
 import discord_bot
+from Hra import Hra
 
 # absultni cesta k logum
-CESTA_LOGY = r"REPLACED_PATH\KoloStesti\Logs.txt"
+CESTA_LOGY_DK = r"REPLACED_PATH\KoloStesti\LogsDK.txt"
+CESTA_LOGY_DFK = r"REPLACED_PATH\KoloStesti\LogsDFK.txt"
+CESTA_LOGY_D = r"REPLACED_PATH\KoloStesti\LogsD.txt"
+CESTA_KDO_BYL_TOCEN_NAPOSLED = r"REPLACED_PATH\KoloStesti\KdoBylTocenNaposled.txt"
+
+def ZjistiKohoJsmeTociliNaposled():
+    try:
+        soubor = open(CESTA_KDO_BYL_TOCEN_NAPOSLED, "rt")
+        return soubor.read()
+    except:
+        print("Soubor KdoBylTocenNaposled nenelezen nebo poškozen.")
+        exit()
+
+def ZapisKdoBylTocen(koho_jsme_tocili):
+    try:
+        soubor = open(CESTA_KDO_BYL_TOCEN_NAPOSLED, "wt")
+        soubor.write(koho_jsme_tocili)
+    except:
+        print("Soubor KdoBylTocenNaposled nenelezen nebo poškozen.")
+        exit()
+
+def NajdiLogy(koho_jsme_tocili):
+    if koho_jsme_tocili == "DK":
+        return CESTA_LOGY_DK
+    elif koho_jsme_tocili == "DFK":
+        return CESTA_LOGY_DFK
+    elif koho_jsme_tocili == "D":
+        return CESTA_LOGY_D
+
+def ZapisDoDatabaze(koho_jsme_tocili, text):
+    # databaze
+    umisteni_logu = NajdiLogy(koho_jsme_tocili)
+    try:
+        databaze = open(umisteni_logu, "at")
+        databaze.write(text)
+        databaze.close()
+    except:
+        print("Soubor s logy nenalezen nebo poškozen.")
+        exit()
+
+
+def RemoveUnwantedGames(list_her_grafika, list_her, window, kdo_chce_hrat):
+    wanted_games = []
+
+    for index in range(0,len(list_her_grafika)):
+        if kdo_chce_hrat in list_her[index].list_chticu:
+            window[list_her_grafika[index].key].Update(visible = True)
+            wanted_games.append(list_her_grafika[index])
+        else:
+            window[list_her_grafika[index].key].Update(visible = False)
+
+    window.refresh()
+    return wanted_games
 
 def MakeAllVisible(list_konkretni, window):
     for hra in list_konkretni:
@@ -47,9 +100,19 @@ def Toceni(list_konkretni, kc):
     return vyherni_hra
 
 # list her, ktere pripadaji v uvahu
-# TODO tuples
-list_her = ["Apex Legends", "PUBG: Battlegrounds", "Payday 2", "Counter Strike: Global Offensive", 
-            "Fortnite", "Programovani kola stesti", "Lost Ark", "Fall Guys", "Overwatch", "League of Legends", "Grant Treft Auto V"]
+apex = Hra("Apex Legends", ["DK", "D", "K"], 1)
+pubg = Hra("PUBG: Battlegrounds", ["DK", "K"], 1)
+csgo = Hra("Counter Strike: Global Offensive", ["DK", "D"], 1)
+fortnite = Hra("Fortnite", ["DK", "D"], 1)
+programovani = Hra("Programovani kola stesti", ["DK"], 1)
+lost_ark = Hra("Lost Ark", ["DK", "D", "K"], 1)
+payday2 = Hra("Payday 2", ["DFK", "DK", "FK", "F", "K"], 1)
+lolko = Hra("League of Legends", ["DFKM", "DFK", "DK", "FK","DM", "D", "M"], 1)
+fall_guys = Hra("Fall Guys", ["DFK", "DK", "DF", "FK", "D", "K", "F"], 1)
+overwatch = Hra("Overwatch", ["DFK", "DK", "DF", "FK", "D", "K", "F"], 1)
+gta = Hra("Grant Treft Auto V", ["DFK", "F"], 1)
+
+list_her = [apex, pubg, csgo, fortnite, programovani, lost_ark, payday2, lolko, fall_guys, overwatch, gta]
 
 # barvy
 back = "Black"
@@ -63,16 +126,16 @@ output = grafika.Text("", text_color=front, background_color=back, font = nas_fo
 minula_hra = grafika.Text("\nJak dopadla minulá hra?", text_color=front, background_color=back, font = nas_font)
 winlose = grafika.Text("", text_color=front, background_color=back, font = nas_font)
 
-
 list_her_grafika = []
 
 # vytvor list textu z listu her
 for hra in list_her:
-    list_her_grafika.append(grafika.Text(hra, text_color=front, font = nas_font, background_color=back, key=hra))
+    list_her_grafika.append(grafika.Text(hra.nazev, text_color=front, font = nas_font, background_color=back, key=hra.nazev))
 
 # buttony
-zatoc = grafika.Button("ZATOČ", button_color = 'Green', font = nas_font , mouseover_colors='DarkGreen', size = (7,0))
-fanda = grafika.Button("FANDA", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
+kdf_button = grafika.Button("DK", button_color = 'Green', font = nas_font , mouseover_colors='DarkGreen', size = (7,0))
+fanda_button = grafika.Button("DFK", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
+dejv_button = grafika.Button("D", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 w = grafika.Button("W", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 l = grafika.Button("L", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 
@@ -85,7 +148,7 @@ for hra in list_her_grafika:
 
 # pridej buttony
 layout.append([output])
-layout.append([zatoc,fanda])
+layout.append([kdf_button,fanda_button,dejv_button])
 layout.append([minula_hra])
 layout.append([w,l])
 layout.append([winlose])
@@ -93,11 +156,10 @@ layout.append([winlose])
 # vlastnosti okna
 window = grafika.Window(title="Gamerský kolo", layout=layout, margins=(400, 200), background_color="Black", use_default_focus=False)
 
-# databaze
-database = open(CESTA_LOGY, "at")
-
 # vyherce
 konecna_vyherni_hra = list_her_grafika[0]
+
+koho_jsme_tocili = ""
 
 # beh kola
 while True:
@@ -105,42 +167,27 @@ while True:
     event, values = window.read()
 
     # zmacknuti tlacitka ZATOC
-    if event == "ZATOČ":
-        MakeAllVisible(list_her_grafika, window)
-        window["Grant Treft Auto V"].Update(visible = False)
-
-        list_nas = list(list_her_grafika)
-        list_nas.pop()
-
-        konecna_vyherni_hra = Toceni(list_nas, random.uniform(0.3, 0.8))
-
-    elif event == "FANDA":
-        window["Grant Treft Auto V"].Update(visible = True)
-
-        list_fanda = []
-        jedemeListFanda = False
-
-        for hra in list_her_grafika:
-            if (jedemeListFanda or hra.Get() == "Fall Guys"):
-                list_fanda.append(hra)
-                jedemeListFanda = True
-            else:
-                window[hra.Get()].Update(visible = False)
-
-        window.refresh()
-
-        konecna_vyherni_hra = Toceni(list_fanda, random.uniform(0.3, 0.5))
+    if event == "DK":
+        konecna_vyherni_hra = Toceni(RemoveUnwantedGames(list_her_grafika, list_her , window, "DK"), random.uniform(0.3, 0.8))
+        koho_jsme_tocili = "DK"
+    elif event == "DFK":
+        konecna_vyherni_hra = Toceni(RemoveUnwantedGames(list_her_grafika, list_her , window, "DFK"), random.uniform(0.3, 0.8))
+        koho_jsme_tocili = "DFK"
+    elif event == "D":
+        konecna_vyherni_hra = Toceni(RemoveUnwantedGames(list_her_grafika, list_her , window, "D"), random.uniform(0.3, 0.8))
+        koho_jsme_tocili = "D"
     elif event == "W":
-        database.write("W\n")
+        koho_jsme_tocili = ZjistiKohoJsmeTociliNaposled()
+        ZapisDoDatabaze(koho_jsme_tocili, "W\n")
         winlose.update("\n YOU ARE THE BEST" )
     elif event == "L":
-        database.write("L\n")
+        koho_jsme_tocili = ZjistiKohoJsmeTociliNaposled()
+        ZapisDoDatabaze(koho_jsme_tocili, "L\n")
         winlose.update("\n YOU SUCK" )
     # zavreni okna
     elif event == grafika.WIN_CLOSED:
-        database.write(date.today().strftime("%d.%m.%Y") + " " + konecna_vyherni_hra.Get() + " ")
-        database.close()
-
+        ZapisDoDatabaze(koho_jsme_tocili, date.today().strftime("%d.%m.%Y") + " " + konecna_vyherni_hra.Get() + " ")
+        ZapisKdoBylTocen(koho_jsme_tocili)
         discord_bot.StartBot(konecna_vyherni_hra.Get())
         break
 
