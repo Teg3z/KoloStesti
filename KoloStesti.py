@@ -10,6 +10,7 @@ from Hra import Hra
 CESTA_LOGY_DK = r"C:\Users\Sviha\Desktop\apps\Programming\KoloStesti\KoloStesti\LogsDK.txt"
 CESTA_LOGY_DFK = r"C:\Users\Sviha\Desktop\apps\Programming\KoloStesti\KoloStesti\LogsDFK.txt"
 CESTA_LOGY_D = r"C:\Users\Sviha\Desktop\apps\Programming\KoloStesti\KoloStesti\LogsD.txt"
+CESTA_LOGY_DFKM = r"C:\Users\Sviha\Desktop\apps\Programming\KoloStesti\KoloStesti\LogsDFKM.txt"
 CESTA_KDO_BYL_TOCEN_NAPOSLED = r"C:\Users\Sviha\Desktop\apps\Programming\KoloStesti\KoloStesti\KdoBylTocenNaposled.txt"
 
 def ZjistiKohoJsmeTociliNaposled():
@@ -35,6 +36,8 @@ def NajdiLogy(koho_jsme_tocili):
         return CESTA_LOGY_DFK
     elif koho_jsme_tocili == "D":
         return CESTA_LOGY_D
+    elif koho_jsme_tocili == "DFKM":
+        return CESTA_LOGY_DFKM
 
 def ZapisDoDatabaze(koho_jsme_tocili, text):
     # databaze
@@ -82,7 +85,7 @@ def Toceni(list_konkretni, kc):
     while not koncime:
         for hra_zelena in list_konkretni:
             hra_zelena.update(text_color='Lime')
-            if interval != 0.01:
+            if hra_bila.key != hra_zelena.key:
                 hra_bila.update(text_color='White')
             hra_bila = hra_zelena
             window.refresh()
@@ -133,9 +136,10 @@ for hra in list_her:
     list_her_grafika.append(grafika.Text(hra.nazev, text_color=front, font = nas_font, background_color=back, key=hra.nazev))
 
 # buttony
-kdf_button = grafika.Button("DK", button_color = 'Green', font = nas_font , mouseover_colors='DarkGreen', size = (7,0))
-fanda_button = grafika.Button("DFK", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
-dejv_button = grafika.Button("D", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
+dk_button = grafika.Button("DK", button_color = 'Green', font = nas_font , mouseover_colors='DarkGreen', size = (7,0))
+dfk_button = grafika.Button("DFK", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
+d_button = grafika.Button("D", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
+dfkm_button = grafika.Button("DFKM", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 w = grafika.Button("W", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 l = grafika.Button("L", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 
@@ -148,7 +152,7 @@ for hra in list_her_grafika:
 
 # pridej buttony
 layout.append([output])
-layout.append([kdf_button,fanda_button,dejv_button])
+layout.append([dk_button, dfk_button, d_button, dfkm_button])
 layout.append([minula_hra])
 layout.append([w,l])
 layout.append([winlose])
@@ -176,6 +180,9 @@ while True:
     elif event == "D":
         konecna_vyherni_hra = Toceni(RemoveUnwantedGames(list_her_grafika, list_her , window, "D"), random.uniform(0.3, 0.8))
         koho_jsme_tocili = "D"
+    elif event == "DFKM":
+        konecna_vyherni_hra = Toceni(RemoveUnwantedGames(list_her_grafika, list_her , window, "DFKM"), random.uniform(0.3, 0.8))
+        koho_jsme_tocili = "DFKM"
     elif event == "W":
         koho_jsme_tocili = ZjistiKohoJsmeTociliNaposled()
         ZapisDoDatabaze(koho_jsme_tocili, "W\n")
