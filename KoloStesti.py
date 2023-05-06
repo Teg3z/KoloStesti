@@ -39,6 +39,8 @@ def NajdiLogy(koho_jsme_tocili):
         return CESTA_LOGY_D
     elif koho_jsme_tocili == "DFKM":
         return CESTA_LOGY_DFKM
+    elif koho_jsme_tocili == "DKM":
+        return CESTA_LOGY_DKM
 
 def ZapisDoDatabaze(koho_jsme_tocili, text):
     # databaze
@@ -111,15 +113,18 @@ apex = Hra("Apex Legends", ["DK", "D", "K", "DKM"], 1)
 pubg = Hra("PUBG: Battlegrounds", ["DK", "K", "DKM"], 1)
 csgo = Hra("Counter Strike: Global Offensive", ["DK", "D", "DKM"], 1)
 fortnite = Hra("Fortnite", ["DK", "D", "DKM"], 1)
-programovani = Hra("Programovani kola stesti", ["DK", "DKM"], 1)
+programovani = Hra("Programovani kola stesti", ["DK"], 1)
 lost_ark = Hra("Lost Ark", ["DK", "D", "K", "DKM"], 1)
 payday2 = Hra("Payday 2", ["DFK", "DK", "FK", "F", "K", "DKM"], 1)
-lolko = Hra("League of Legends", ["DFKM", "DFK", "DK", "FK","DM", "D", "M", "DKM"], 1)
+lolko = Hra("League of Legends", ["DM", "D", "M", "DKM", "DF"], 1)
 fall_guys = Hra("Fall Guys", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM"], 1)
 overwatch = Hra("Overwatch", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM"], 1)
-gta = Hra("Grant Treft Auto V", ["DFK", "F"], 1)
+gta = Hra("Grant Treft Auto V", ["DFK", "F", "DK"], 1)
+keep_talking = Hra("Keep Talking and Nobody Explodes", ["DK", "DF", "DFK"], 1)
+orcs = Hra("Orcs Must Die", ["DK", "K"], 1)
+deceive = Hra("Deceive", ["DFK", "DK"], 1)
 
-list_her = [apex, pubg, csgo, fortnite, programovani, lost_ark, payday2, lolko, fall_guys, overwatch, gta]
+list_her = [apex, pubg, csgo, fortnite, programovani, lost_ark, payday2, lolko, fall_guys, overwatch, gta, keep_talking, orcs, deceive]
 
 # barvy
 back = "Black"
@@ -163,7 +168,7 @@ layout.append([w,l])
 layout.append([winlose])
 
 # vlastnosti okna
-window = grafika.Window(title="Gamerský kolo", layout=layout, margins=(400, 200), background_color="Black", use_default_focus=False)
+window = grafika.Window(title="Gamerský kolo", layout=layout, background_color="Black", use_default_focus=False)
 
 # vyherce
 konecna_vyherni_hra = list_her_grafika[0]
