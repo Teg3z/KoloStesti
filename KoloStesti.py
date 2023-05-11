@@ -8,6 +8,7 @@ from Hra import Hra
 
 # absultni cesta k logum
 CESTA_LOGY_DK = r"REPLACED_PATH\KoloStesti\LogsDK.txt"
+CESTA_LOGY_DF = r"REPLACED_PATH\KoloStesti\LogsDF.txt"
 CESTA_LOGY_DFK = r"REPLACED_PATH\KoloStesti\LogsDFK.txt"
 CESTA_LOGY_DKM = r"REPLACED_PATH\KoloStesti\LogsDKM.txt"
 CESTA_LOGY_D = r"REPLACED_PATH\KoloStesti\LogsD.txt"
@@ -41,6 +42,8 @@ def NajdiLogy(koho_jsme_tocili):
         return CESTA_LOGY_DFKM
     elif koho_jsme_tocili == "DKM":
         return CESTA_LOGY_DKM
+    elif koho_jsme_tocili == "DF":
+        return CESTA_LOGY_DF
 
 def ZapisDoDatabaze(koho_jsme_tocili, text):
     # databaze
@@ -119,10 +122,10 @@ payday2 = Hra("Payday 2", ["DFK", "DK", "FK", "F", "K", "DKM"], 1)
 lolko = Hra("League of Legends", ["DM", "D", "M", "DKM", "DF"], 1)
 fall_guys = Hra("Fall Guys", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM"], 1)
 overwatch = Hra("Overwatch", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM"], 1)
-gta = Hra("Grant Treft Auto V", ["DFK", "F", "DK"], 1)
-keep_talking = Hra("Keep Talking and Nobody Explodes", ["DK", "DF", "DFK"], 1)
+gta = Hra("Grant Treft Auto V", ["DFK", "F", "DK", "DF"], 1)
+keep_talking = Hra("Keep Talking and Nobody Explodes", ["DK", "DF"], 1)
 orcs = Hra("Orcs Must Die", ["DK", "K"], 1)
-deceive = Hra("Deceive", ["DFK", "DK"], 1)
+deceive = Hra("Deceive", ["DFK", "DK", "DF"], 1)
 
 list_her = [apex, pubg, csgo, fortnite, programovani, lost_ark, payday2, lolko, fall_guys, overwatch, gta, keep_talking, orcs, deceive]
 
@@ -146,6 +149,7 @@ for hra in list_her:
 
 # buttony
 dk_button = grafika.Button("DK", button_color = 'Green', font = nas_font , mouseover_colors='DarkGreen', size = (7,0))
+df_button = grafika.Button("DF", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 dfk_button = grafika.Button("DFK", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 dkm_button = grafika.Button("DKM", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 d_button = grafika.Button("D", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
@@ -162,7 +166,7 @@ for hra in list_her_grafika:
 
 # pridej buttony
 layout.append([output])
-layout.append([dk_button, dfk_button, dkm_button, d_button, dfkm_button])
+layout.append([dk_button, dfk_button, dkm_button, d_button, dfkm_button, df_button])
 layout.append([minula_hra])
 layout.append([w,l])
 layout.append([winlose])
@@ -187,6 +191,9 @@ while True:
     elif event == "DFK":
         konecna_vyherni_hra = Toceni(RemoveUnwantedGames(list_her_grafika, list_her , window, "DFK"), random.uniform(0.3, 0.8))
         koho_jsme_tocili = "DFK"
+    elif event == "DF":
+        konecna_vyherni_hra = Toceni(RemoveUnwantedGames(list_her_grafika, list_her , window, "DF"), random.uniform(0.3, 0.8))
+        koho_jsme_tocili = "DF"
     elif event == "DKM":
         konecna_vyherni_hra = Toceni(RemoveUnwantedGames(list_her_grafika, list_her , window, "DKM"), random.uniform(0.3, 0.8))
         koho_jsme_tocili = "DKM"
