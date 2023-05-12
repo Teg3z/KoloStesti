@@ -14,6 +14,7 @@ CESTA_LOGY_DKM = r"REPLACED_PATH\KoloStesti\LogsDKM.txt"
 CESTA_LOGY_D = r"REPLACED_PATH\KoloStesti\LogsD.txt"
 CESTA_LOGY_DFKM = r"REPLACED_PATH\KoloStesti\LogsDFKM.txt"
 CESTA_KDO_BYL_TOCEN_NAPOSLED = r"REPLACED_PATH\KoloStesti\KdoBylTocenNaposled.txt"
+CESTA_VYHERNI_HRA = r"REPLACED_PATH\KoloStesti\VyherniHra.txt"
 
 def ZjistiKohoJsmeTociliNaposled():
     try:
@@ -59,18 +60,20 @@ def ZapisDoDatabaze(koho_jsme_tocili, text):
 
 def RemoveUnwantedGames(list_her_grafika, list_her, window, kdo_chce_hrat):
     wanted_games = []
+    games = []
 
     for index in range(0,len(list_her_grafika)):
         if kdo_chce_hrat in list_her[index].list_chticu:
             window[list_her_grafika[index].key].Update(visible = True)
             wanted_games.append(list_her_grafika[index])
-            if (kdo_chce_hrat == "DKM" and list_her_grafika[index].key == "League of Legends"):
-                for i in range(0,9):
-                    wanted_games.append(list_her_grafika[index])
+            games.append(list_her[index])
         else:
             window[list_her_grafika[index].key].Update(visible = False)
 
     window.refresh()
+
+    VyberVyherniHru(games)
+    
     return wanted_games
 
 def MakeAllVisible(list_konkretni, window):
@@ -81,13 +84,38 @@ def Vybel(list_konkretni):
     for hra_bila in list_konkretni:
         hra_bila.update(text_color='White')
 
+def VyberVyherniHru(list_konkretni):
+    procenta = []
+    for hra in list_konkretni:
+        procenta.append(hra.procenta)
+    vyherni_hra = random.choices(list(list_konkretni),weights=procenta, k=1)
+
+    try:
+        soubor = open(CESTA_VYHERNI_HRA, "wt")
+        soubor.write(vyherni_hra[0].nazev)
+    except:
+        print("nenalezen nebo poškozen.")
+        exit()
+
+
+
 def Toceni(list_konkretni, kc):
 
     Vybel(list_konkretni)
 
     interval = 0.01
     konecny_cas = kc
-    vyherni_hra = random.choice(list(list_konkretni))
+    try:
+        soubor = open(CESTA_VYHERNI_HRA, "rt")
+        vyherni_hra_nazev = soubor.read()
+    except:
+        print("nenalezen nebo poškozen.")
+        exit()
+    
+    for hra in list_konkretni:
+        if (hra.Get() == vyherni_hra_nazev):
+            vyherni_hra = hra
+    #vyherni_hra = random.choice(list(list_konkretni))
     hra_bila = list_konkretni[0]
     koncime = False
 
@@ -112,20 +140,20 @@ def Toceni(list_konkretni, kc):
     return vyherni_hra
 
 # list her, ktere pripadaji v uvahu
-apex = Hra("Apex Legends", ["DK", "D", "K", "DKM"], 1)
-pubg = Hra("PUBG: Battlegrounds", ["DK", "K", "DKM"], 1)
-csgo = Hra("Counter Strike: Global Offensive", ["DK", "D", "DKM"], 1)
-fortnite = Hra("Fortnite", ["DK", "D", "DKM"], 1)
+apex = Hra("Apex Legends", ["DK", "D", "K", "DKM"], 0)
+pubg = Hra("PUBG: Battlegrounds", ["DK", "K", "DKM"], 0)
+csgo = Hra("Counter Strike: Global Offensive", ["DK", "D", "DKM"], 0)
+fortnite = Hra("Fortnite", ["DK", "D", "DKM"],0)
 programovani = Hra("Programovani kola stesti", ["DK"], 1)
-lost_ark = Hra("Lost Ark", ["DK", "D", "K", "DKM"], 1)
-payday2 = Hra("Payday 2", ["DFK", "DK", "FK", "F", "K", "DKM"], 1)
-lolko = Hra("League of Legends", ["DM", "D", "M", "DKM", "DF"], 1)
-fall_guys = Hra("Fall Guys", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM"], 1)
-overwatch = Hra("Overwatch", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM"], 1)
-gta = Hra("Grant Treft Auto V", ["DFK", "F", "DK", "DF"], 1)
-keep_talking = Hra("Keep Talking and Nobody Explodes", ["DK", "DF"], 1)
-orcs = Hra("Orcs Must Die", ["DK", "K"], 1)
-deceive = Hra("Deceive", ["DFK", "DK", "DF"], 1)
+lost_ark = Hra("Lost Ark", ["DK", "D", "K", "DKM"], 0)
+payday2 = Hra("Payday 2", ["DFK", "DK", "FK", "F", "K", "DKM"], 0)
+lolko = Hra("League of Legends", ["DM", "D", "M", "DKM", "DF"], 0)
+fall_guys = Hra("Fall Guys", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM"], 0)
+overwatch = Hra("Overwatch", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM"], 0)
+gta = Hra("Grant Treft Auto V", ["DFK", "F", "DK", "DF"], 0)
+keep_talking = Hra("Keep Talking and Nobody Explodes", ["DK", "DF"], 0)
+orcs = Hra("Orcs Must Die", ["DK", "K"], 0)
+deceive = Hra("Deceive", ["DFK", "DK", "DF"], 0)
 
 list_her = [apex, pubg, csgo, fortnite, programovani, lost_ark, payday2, lolko, fall_guys, overwatch, gta, keep_talking, orcs, deceive]
 
