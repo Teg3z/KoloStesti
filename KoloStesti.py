@@ -7,14 +7,16 @@ import discord_bot
 from Hra import Hra
 
 # absultni cesta k logum
-CESTA_LOGY_DK = r"REPLACED_PATH\KoloStesti\LogsDK.txt"
-CESTA_LOGY_DF = r"REPLACED_PATH\KoloStesti\LogsDF.txt"
-CESTA_LOGY_DFK = r"REPLACED_PATH\KoloStesti\LogsDFK.txt"
-CESTA_LOGY_DKM = r"REPLACED_PATH\KoloStesti\LogsDKM.txt"
-CESTA_LOGY_D = r"REPLACED_PATH\KoloStesti\LogsD.txt"
-CESTA_LOGY_DFKM = r"REPLACED_PATH\KoloStesti\LogsDFKM.txt"
-CESTA_KDO_BYL_TOCEN_NAPOSLED = r"REPLACED_PATH\KoloStesti\KdoBylTocenNaposled.txt"
-CESTA_VYHERNI_HRA = r"REPLACED_PATH\KoloStesti\VyherniHra.txt"
+CESTA_LOGY = r"REPLACED_PATH\KoloStesti\\"
+
+CESTA_LOGY_DK = CESTA_LOGY + "LogsDK.txt"
+CESTA_LOGY_DF = CESTA_LOGY + "LogsDF.txt"
+CESTA_LOGY_DFK = CESTA_LOGY + "LogsDFK.txt"
+CESTA_LOGY_DKM = CESTA_LOGY + "LogsDKM.txt"
+CESTA_LOGY_D = CESTA_LOGY + "LogsD.txt"
+CESTA_LOGY_DFKM = CESTA_LOGY + "LogsDFKM.txt"
+CESTA_KDO_BYL_TOCEN_NAPOSLED = CESTA_LOGY + "KdoBylTocenNaposled.txt"
+CESTA_VYHERNI_HRA = CESTA_LOGY + "VyherniHra.txt"
 
 def ZjistiKohoJsmeTociliNaposled():
     try:
@@ -140,20 +142,20 @@ def Toceni(list_konkretni, kc):
     return vyherni_hra
 
 # list her, ktere pripadaji v uvahu
-apex = Hra("Apex Legends", ["DK", "D", "K", "DKM"], 0)
-pubg = Hra("PUBG: Battlegrounds", ["DK", "K", "DKM"], 0)
-csgo = Hra("Counter Strike: Global Offensive", ["DK", "D", "DKM"], 0)
-fortnite = Hra("Fortnite", ["DK", "D", "DKM"],0)
+apex = Hra("Apex Legends", ["DK", "D", "K", "DKM"], 1)
+pubg = Hra("PUBG: Battlegrounds", ["DK", "K", "DKM"], 1)
+csgo = Hra("Counter Strike: Global Offensive", ["DK", "D", "DKM"], 1)
+fortnite = Hra("Fortnite", ["DK", "D", "DKM"],1)
 programovani = Hra("Programovani kola stesti", ["DK"], 1)
-lost_ark = Hra("Lost Ark", ["DK", "D", "K", "DKM"], 0)
-payday2 = Hra("Payday 2", ["DFK", "DK", "FK", "F", "K", "DKM"], 0)
-lolko = Hra("League of Legends", ["DM", "D", "M", "DKM", "DF"], 0)
-fall_guys = Hra("Fall Guys", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM"], 0)
-overwatch = Hra("Overwatch", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM"], 0)
-gta = Hra("Grant Treft Auto V", ["DFK", "F", "DK", "DF"], 0)
-keep_talking = Hra("Keep Talking and Nobody Explodes", ["DK", "DF"], 0)
-orcs = Hra("Orcs Must Die", ["DK", "K"], 0)
-deceive = Hra("Deceive", ["DFK", "DK", "DF"], 0)
+lost_ark = Hra("Lost Ark", ["DK", "D", "K", "DKM"], 1)
+payday2 = Hra("Payday 2", ["DFK", "DK", "FK", "F", "K", "DKM"], 1)
+lolko = Hra("League of Legends", ["DM", "D", "M", "DKM", "DF"], 1)
+fall_guys = Hra("Fall Guys", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM"], 1)
+overwatch = Hra("Overwatch", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM"], 1)
+gta = Hra("Grant Treft Auto V", ["DFK", "F", "DK", "DF"], 1)
+keep_talking = Hra("Keep Talking and Nobody Explodes", ["DK", "DF"], 1)
+orcs = Hra("Orcs Must Die", ["DK", "K"], 1)
+deceive = Hra("Deceive", ["DFK", "DK", "DF"], 1)
 
 list_her = [apex, pubg, csgo, fortnite, programovani, lost_ark, payday2, lolko, fall_guys, overwatch, gta, keep_talking, orcs, deceive]
 
