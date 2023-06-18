@@ -17,18 +17,20 @@ CESTA_LOGY_D = CESTA_LOGY + "LogsD.txt"
 CESTA_LOGY_DFKM = CESTA_LOGY + "LogsDFKM.txt"
 CESTA_KDO_BYL_TOCEN_NAPOSLED = CESTA_LOGY + "KdoBylTocenNaposled.txt"
 CESTA_VYHERNI_HRA = CESTA_LOGY + "VyherniHra.txt"
+CESTA_POSLEDNI_HRA = CESTA_LOGY + "PosledniHra.txt"
+CESTA_LOGY_DKKA = CESTA_LOGY + "LogsDKKA.txt"
 
-def ZjistiKohoJsmeTociliNaposled():
+def ZjistiKohoJsmeTociliNaposled(cesta):
     try:
-        soubor = open(CESTA_KDO_BYL_TOCEN_NAPOSLED, "rt")
+        soubor = open(cesta, "rt")
         return soubor.read()
     except:
         print("Soubor KdoBylTocenNaposled nenelezen nebo poškozen.")
         exit()
 
-def ZapisKdoBylTocen(koho_jsme_tocili):
+def ZapisKdoBylTocen(koho_jsme_tocili, cesta):
     try:
-        soubor = open(CESTA_KDO_BYL_TOCEN_NAPOSLED, "wt")
+        soubor = open(cesta, "wt")
         soubor.write(koho_jsme_tocili)
     except:
         print("Soubor KdoBylTocenNaposled nenelezen nebo poškozen.")
@@ -47,6 +49,8 @@ def NajdiLogy(koho_jsme_tocili):
         return CESTA_LOGY_DKM
     elif koho_jsme_tocili == "DF":
         return CESTA_LOGY_DF
+    elif koho_jsme_tocili == "DKKA":
+        return CESTA_LOGY_DKKA
 
 def ZapisDoDatabaze(koho_jsme_tocili, text):
     # databaze
@@ -142,22 +146,22 @@ def Toceni(list_konkretni, kc):
     return vyherni_hra
 
 # list her, ktere pripadaji v uvahu
-apex = Hra("Apex Legends", ["DK", "D", "K", "DKM"], 1)
-pubg = Hra("PUBG: Battlegrounds", ["DK", "K", "DKM"], 1)
-csgo = Hra("Counter Strike: Global Offensive", ["DK", "D", "DKM"], 1)
+apex = Hra("Apex Legends", ["DK", "D", "K", "DKM", "DKKA"], 1)
+pubg = Hra("PUBG: Battlegrounds", ["DK", "K", "DKM", "D", "DKKA"], 1)
+csgo = Hra("Counter Strike: Global Offensive", ["DK", "D", "DKM", "DKKA"], 1)
 fortnite = Hra("Fortnite", ["DK", "D", "DKM"],1)
-programovani = Hra("Programovani kola stesti", ["DK"], 1)
-lost_ark = Hra("Lost Ark", ["DK", "D", "K", "DKM"], 1)
-payday2 = Hra("Payday 2", ["DFK", "DK", "FK", "F", "K", "DKM"], 1)
+programovani = Hra("Programovani kola stesti", ["DK", "D", "DKKA"], 1)
+lost_ark = Hra("Lost Ark", ["DK", "D", "K", "DKM", "DFK"], 1)
+#payday2 = Hra("Payday 2", ["DFK", "DK", "FK", "F", "K", "DKM"], 1)
 lolko = Hra("League of Legends", ["DM", "D", "M", "DKM", "DF"], 1)
 fall_guys = Hra("Fall Guys", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM"], 1)
-overwatch = Hra("Overwatch", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM"], 1)
+overwatch = Hra("Overwatch", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKM", "DKKA"], 1)
 gta = Hra("Grant Treft Auto V", ["DFK", "F", "DK", "DF"], 1)
 keep_talking = Hra("Keep Talking and Nobody Explodes", ["DK", "DF"], 1)
 orcs = Hra("Orcs Must Die", ["DK", "K"], 1)
 deceive = Hra("Deceive", ["DFK", "DK", "DF"], 1)
 
-list_her = [apex, pubg, csgo, fortnite, programovani, lost_ark, payday2, lolko, fall_guys, overwatch, gta, keep_talking, orcs, deceive]
+list_her = [apex, pubg, csgo, fortnite, programovani, lost_ark, lolko, fall_guys, overwatch, gta, keep_talking, orcs, deceive]
 
 # barvy
 back = "Black"
@@ -170,6 +174,9 @@ nas_font = ("Arial", 18)
 output = grafika.Text("", text_color=front, background_color=back, font = nas_font)
 minula_hra = grafika.Text("\nJak dopadla minulá hra?", text_color=front, background_color=back, font = nas_font)
 winlose = grafika.Text("", text_color=front, background_color=back, font = nas_font)
+
+posledniHraText = "Naposled toceno: " + ZjistiKohoJsmeTociliNaposled(CESTA_POSLEDNI_HRA)
+posledniHra = grafika.Text(posledniHraText, text_color=front, background_color=back, font = nas_font)
 
 list_her_grafika = []
 
@@ -184,6 +191,7 @@ dfk_button = grafika.Button("DFK", button_color = 'Green', font = nas_font, mous
 dkm_button = grafika.Button("DKM", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 d_button = grafika.Button("D", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 dfkm_button = grafika.Button("DFKM", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
+dkka_button = grafika.Button("DKKA", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 w = grafika.Button("W", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 l = grafika.Button("L", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 
@@ -196,10 +204,11 @@ for hra in list_her_grafika:
 
 # pridej buttony
 layout.append([output])
-layout.append([dk_button, dfk_button, dkm_button, d_button, dfkm_button, df_button])
+layout.append([dk_button, dfk_button, dkm_button, d_button, dfkm_button, df_button, dkka_button])
 layout.append([minula_hra])
 layout.append([w,l])
 layout.append([winlose])
+layout.append([posledniHra])
 
 # vlastnosti okna
 window = grafika.Window(title="Gamerský kolo", layout=layout, background_color="Black", use_default_focus=False)
@@ -233,18 +242,22 @@ while True:
     elif event == "DFKM":
         konecna_vyherni_hra = Toceni(RemoveUnwantedGames(list_her_grafika, list_her , window, "DFKM"), random.uniform(0.3, 0.8))
         koho_jsme_tocili = "DFKM"
+    elif event == "DKKA":
+        konecna_vyherni_hra = Toceni(RemoveUnwantedGames(list_her_grafika, list_her , window, "DKKA"), random.uniform(0.3, 0.8))
+        koho_jsme_tocili = "DKKA"
     elif event == "W":
-        koho_jsme_tocili = ZjistiKohoJsmeTociliNaposled()
+        koho_jsme_tocili = ZjistiKohoJsmeTociliNaposled(CESTA_KDO_BYL_TOCEN_NAPOSLED)
         ZapisDoDatabaze(koho_jsme_tocili, "W\n")
         winlose.update("\n YOU ARE THE BEST" )
     elif event == "L":
-        koho_jsme_tocili = ZjistiKohoJsmeTociliNaposled()
+        koho_jsme_tocili = ZjistiKohoJsmeTociliNaposled(CESTA_KDO_BYL_TOCEN_NAPOSLED)
         ZapisDoDatabaze(koho_jsme_tocili, "L\n")
         winlose.update("\n YOU SUCK" )
     # zavreni okna
     elif event == grafika.WIN_CLOSED:
         ZapisDoDatabaze(koho_jsme_tocili, date.today().strftime("%d.%m.%Y") + " " + konecna_vyherni_hra.Get() + " ")
-        ZapisKdoBylTocen(koho_jsme_tocili)
+        ZapisKdoBylTocen(koho_jsme_tocili, CESTA_KDO_BYL_TOCEN_NAPOSLED)
+        ZapisKdoBylTocen(konecna_vyherni_hra.Get(), CESTA_POSLEDNI_HRA)
         discord_bot.StartBot(konecna_vyherni_hra.Get())
         break
 
