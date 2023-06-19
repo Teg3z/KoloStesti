@@ -6,6 +6,11 @@ from datetime import date
 import discord_bot
 from Hra import Hra
 
+import pprint
+
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+
 # absultni cesta k logum
 CESTA_LOGY = r"C:\Users\Sviha\Desktop\apps\Programming\KoloStesti\KoloStesti\\"
 
@@ -19,6 +24,40 @@ CESTA_KDO_BYL_TOCEN_NAPOSLED = CESTA_LOGY + "KdoBylTocenNaposled.txt"
 CESTA_VYHERNI_HRA = CESTA_LOGY + "VyherniHra.txt"
 CESTA_POSLEDNI_HRA = CESTA_LOGY + "PosledniHra.txt"
 CESTA_LOGY_DKKA = CESTA_LOGY + "LogsDKKA.txt"
+
+
+# uri = "mongodb+srv://WOFadmin:TRqz3dHcnAbQataY@wheelofluck.tqghhhz.mongodb.net/?retryWrites=true&w=majority"
+# # Create a new client and connect to the server
+# client = MongoClient(uri, server_api=ServerApi('1'))
+# # Send a ping to confirm a successful connection
+# db = client['WheelOfLuck']
+
+# try:
+#     client.admin.command('ping')
+#     print("Pinged your deployment. You successfully connected to MongoDB!")
+# except Exception as e:
+#     print(e)
+
+
+# collection = db['LastSpin']
+
+# entry = collection.find_one()
+
+# filter = {'_id': entry['_id']}
+# newvalues = { "$set": { "last_game": "Fortnite" } }
+
+# collection.update_one(filter, newvalues)
+
+# #pprint.pprint(entry['last_game'])
+
+
+# #post = {"last_category": "DKKA",
+# #        "last_game": "Apex Legends"}
+
+
+# print(str(db.list_collection_names()))
+# #collection.insert_one(post)
+
 
 def ZjistiKohoJsmeTociliNaposled(cesta):
     try:
