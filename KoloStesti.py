@@ -175,7 +175,7 @@ output = grafika.Text("", text_color=front, background_color=back, font = nas_fo
 minula_hra = grafika.Text("\nJak dopadla minulá hra?", text_color=front, background_color=back, font = nas_font)
 winlose = grafika.Text("", text_color=front, background_color=back, font = nas_font)
 
-posledniHraText = "Naposled toceno: " + ZjistiKohoJsmeTociliNaposled(CESTA_POSLEDNI_HRA)
+posledniHraText = "Naposled točeno: " + ZjistiKohoJsmeTociliNaposled(CESTA_POSLEDNI_HRA)
 posledniHra = grafika.Text(posledniHraText, text_color=front, background_color=back, font = nas_font)
 
 list_her_grafika = []
