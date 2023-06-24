@@ -121,23 +121,24 @@ def Toceni(list_her_grafika, list_her):
     return vyherni_hra_grafika
 
 # list her, ktere pripadaji v uvahu
-apex = Hra("Apex Legends", ["DK", "D", "K", "DKKA"], 1)
-pubg = Hra("PUBG: Battlegrounds", ["DK", "K", "D", "DKKA"], 1)
-csgo = Hra("Counter Strike: Global Offensive", ["DK", "D", "DKKA"], 1)
+apex = Hra("Apex Legends", ["DK", "D", "K", "DKKA", "DKA"], 1)
+pubg = Hra("PUBG: Battlegrounds", ["DK", "K", "D", "DKKA", "DKA"], 1)
+csgo = Hra("Counter Strike: Global Offensive", ["DK", "D", "DKKA", "DKA"], 1)
 fortnite = Hra("Fortnite", ["DK", "D"],1)
-programovani = Hra("Programovani kola stesti", ["DK", "D", "DKKA"], 1)
+programovani = Hra("Programovani kola stesti", ["DK", "D", "DKKA", "DKA"], 1)
 lost_ark = Hra("Lost Ark", ["DK", "D", "K", "DFK"], 1)
 #payday2 = Hra("Payday 2", ["DFK", "DK", "FK", "F", "K"], 1)
 lolko = Hra("League of Legends", ["DM", "D", "M", "DF", "DFKM"], 1)
 fall_guys = Hra("Fall Guys", ["DFK", "DK", "DF", "FK", "D", "K", "F"], 1)
-overwatch = Hra("Overwatch", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKKA"], 1)
+overwatch = Hra("Overwatch", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKKA", "DKA"], 1)
 gta = Hra("Grant Treft Auto V", ["DFK", "F", "DK", "DF"], 1)
 keep_talking = Hra("Keep Talking and Nobody Explodes", ["DK", "DF"], 1)
 orcs = Hra("Orcs Must Die", ["DK", "K"], 1)
 deceive = Hra("Deceive", ["DFK", "DK", "DF"], 1)
-dead_by_daylight = Hra("Dead by Daylight", ["DK", "DKKA"], 1)
+dead_by_daylight = Hra("Dead by Daylight", ["DK", "DKKA", "DKA"], 1)
+dying_light = Hra("Dying Light", ["DK", "DKKA", "DKA"], 1)
 
-list_her = [apex, pubg, csgo, fortnite, programovani, lost_ark, lolko, fall_guys, overwatch, gta, keep_talking, orcs, deceive, dead_by_daylight]
+list_her = [apex, pubg, csgo, fortnite, programovani, lost_ark, lolko, fall_guys, overwatch, gta, keep_talking, orcs, deceive, dead_by_daylight, dying_light]
 
 # barvy
 back = "Black"
@@ -167,6 +168,7 @@ dfk_button = grafika.Button("DFK", button_color = 'Green', font = nas_font, mous
 d_button = grafika.Button("D", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 dfkm_button = grafika.Button("DFKM", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 dkka_button = grafika.Button("DKKA", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
+dka_button = grafika.Button("DKA", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 w = grafika.Button("W", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 l = grafika.Button("L", button_color = 'Green', font = nas_font, mouseover_colors='DarkGreen', size = (7,0))
 
@@ -179,7 +181,7 @@ for hra in list_her_grafika:
 
 # pridej buttony
 layout.append([output])
-layout.append([dk_button, dfk_button, d_button, dfkm_button, df_button, dkka_button])
+layout.append([dk_button, dfk_button, d_button, dfkm_button, df_button, dkka_button, dka_button])
 layout.append([minula_hra])
 layout.append([w,l])
 layout.append([winlose])
