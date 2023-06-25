@@ -1,3 +1,8 @@
 __pycache__
 build
 *.spec
+
+
+# block IDE custom files
+.idea
+.idea/*

@@ -1,6 +1,9 @@
 import discord
+import os
 
-BOT_KLIC_PATH = r"C:\Users\Sviha\Desktop\apps\Programming\KoloStesti\KoloStesti\bot_klic.txt"
+
+current_directory = os.getcwd()
+BOT_KLIC_PATH = current_directory + r"\bot_klic.txt"
 
 intents = discord.Intents.default()
 intents.message_content = True
