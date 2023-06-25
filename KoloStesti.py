@@ -8,7 +8,7 @@ from Hra import Hra
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
-###
+#####
 # pripoj se k DB
 # databaze
 uri = "mongodb+srv://WOFadmin:TRqz3dHcnAbQataY@wheelofluck.tqghhhz.mongodb.net/?retryWrites=true&w=majority"
