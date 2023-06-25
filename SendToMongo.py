@@ -4,14 +4,9 @@ import re
 
 CESTA_LOGY = r"C:\Users\Sviha\Desktop\apps\Programming\KoloStesti\KoloStesti\\"
 
-CESTA_LOGY_DK = CESTA_LOGY + "LogsDK.txt"
-CESTA_LOGY_DF = CESTA_LOGY + "LogsDF.txt"
-CESTA_LOGY_DFK = CESTA_LOGY + "LogsDFK.txt"
-CESTA_LOGY_D = CESTA_LOGY + "LogsD.txt"
-CESTA_LOGY_DFKM = CESTA_LOGY + "LogsDFKM.txt"
-CESTA_LOGY_DKKA = CESTA_LOGY + "LogsDKKA.txt"
+CESTA_RACE = CESTA_LOGY + "GTARacy.txt"
 
-list_logu = [CESTA_LOGY_DF, CESTA_LOGY_DFK, CESTA_LOGY_DFKM, CESTA_LOGY_DK, CESTA_LOGY_DKKA]
+list_logu = [CESTA_RACE]
 
 # pripoj se k DB
 # databaze
@@ -22,22 +17,9 @@ client = MongoClient(uri, server_api=ServerApi('1'))
 db = client['WheelOfLuck']
 
 def retrieveGameDataFromLine(line):
-        document_entries = line.strip().split(' ')
-        game_date = document_entries[0]
-        game_result = document_entries[len(document_entries) - 1]
-        document_entries.pop()
-        document_entries.pop(0)
-        game_name = ""
-        for entry in document_entries:
-            game_name += entry + " "
-        game_name.strip()
-
         post = {
-            "game_date": game_date,
-            "game": game_name,
-            "result": game_result
+            "race_name": line,
         }
-
         return post
 
 def getCollection(path):
@@ -61,7 +43,7 @@ def main():
             # ziskej data z line
             json_data = retrieveGameDataFromLine(line)
             #collection = $najdi kollekci podle Logu
-            collection = db[getCollection(log)]
+            collection = db['GTARaces']
             sendToMongoDB(json_data, collection)
             line = soubor.readline()
         soubor.close()
