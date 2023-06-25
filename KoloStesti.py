@@ -8,7 +8,7 @@ from Hra import Hra
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
-###
+#####
 # pripoj se k DB
 # databaze
 uri = "REPLACED_DB_CONNECTION_STRING"
