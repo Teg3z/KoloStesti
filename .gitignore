@@ -1,4 +1,8 @@
+# do not include compiler cachce from non IDE compilations
 __pycache__
+
+# do not include installer and binaries into the repository
+dist
 build
 *.spec
 
