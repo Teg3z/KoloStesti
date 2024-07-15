@@ -1,7 +1,6 @@
 import discord
 import os
 
-
 current_directory = os.getcwd()
 BOT_KLIC_PATH = current_directory + r"\bot_klic.txt"
 
@@ -10,18 +9,19 @@ intents.message_content = True
 
 client = discord.Client(intents=intents)
 
+
 @client.event
 async def on_ready():
-  print("We have logged in as {0.user}".format(client))
-  await client.get_channel(REPLACED_CHANNEL_ID).send("Jdeme hrát " + vyherni_hra + ", chce se někdo přidat?")
-  # anaconda problem
-  await client.close()
+    print("We have logged in as {0.user}".format(client))
+    await client.get_channel(REPLACED_CHANNEL_ID).send("Jdeme hrát " + vyherni_hra + ", chce se někdo přidat?")
+    # anaconda problem
+    await client.close()
+
 
 def StartBot(vyherni_h):
-  global vyherni_hra
-  vyherni_hra = vyherni_h
-  bot_klic_file = open(BOT_KLIC_PATH, "rt")
-  bot_klic = bot_klic_file.read()
+    global vyherni_hra
+    vyherni_hra = vyherni_h
+    bot_klic_file = open(BOT_KLIC_PATH, "rt")
+    bot_klic = bot_klic_file.read()
 
-  client.run(bot_klic)
-
+    client.run(bot_klic)
