@@ -38,7 +38,6 @@ def append_to_array(race_name, collection):
     collection.update_one({}, {'$push': {'race_list': {'$each': [], '$sort': 1}}})
 
 
-
 def main():
     # import_collection = db['GTARaces']  # specify the source collection with redundant data
     # export_collection = db['GTARacesPrototype']  # specify the expected location of the new data
@@ -46,7 +45,7 @@ def main():
     # export_collection.insert_one(document=parseEntries(import_collection))
 
     # call with empty list will simply sort the array in the document
-    append_to_array([], db['GTARacesPrototype']) # Specify Race names AS A LIST, and the target Collection
+    append_to_array([], db['GTARacesPrototype'])  # Specify Race names AS A LIST, and the target Collection
 
 
 if __name__ == '__main__':
