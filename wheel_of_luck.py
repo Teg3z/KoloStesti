@@ -6,11 +6,12 @@ from datetime import datetime
 from game import Game
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+from env_var_loader import get_env_var_value
 
 # Connect to the MongoDB server
-uri = "mongodb+srv://WOFadmin:TRqz3dHcnAbQataY@wheelofluck.tqghhhz.mongodb.net/?retryWrites=true&w=majority"
-# # Create a new client and connect to the server
-client = MongoClient(uri, server_api=ServerApi('1'))
+DB_CONNECTION_STRING = get_env_var_value("DB_CONNECTION_STRING")
+# Create a new client and connect to the server
+client = MongoClient(DB_CONNECTION_STRING, server_api=ServerApi('1'))
 # Create database
 db = client['WheelOfLuck']
 

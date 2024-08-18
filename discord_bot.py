@@ -1,28 +1,19 @@
 import discord
-import os
 import sys
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv(dotenv_path='variables.env')
+from env_var_loader import get_env_var_value
 
 # Getting environment variables
-DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-print(str(DISCORD_BOT_TOKEN))
-CHANNEL_ID=os.getenv("CHANNEL_ID")
-print(str(CHANNEL_ID))
+DISCORD_BOT_TOKEN = get_env_var_value("DISCORD_BOT_TOKEN")
+CHANNEL_ID = get_env_var_value("CHANNEL_ID")
 
-# Check whether we loaded all environment variables, if not we cannot proceed with the code
-if (DISCORD_BOT_TOKEN or CHANNEL_ID) is None:
-    print("Environment variables weren't loaded correctly. Exiting...")
-    sys.exit(1)  # Exit with a non-zero status code to indicate an error
-
+# Discord API needs the CHANNEL_ID in form of an integer, not string
 try:
     DISCORD_CHANNEL_ID = int(CHANNEL_ID)
 except (TypeError, ValueError):
     print(f"Invalid DISCORD_CHANNEL_ID: {CHANNEL_ID}. Must be an integer.")
     sys.exit(1)
 
+# Declaring Intents for the Discord Client
 intents = discord.Intents.default()
 intents.message_content = True
 
