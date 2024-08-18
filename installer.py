@@ -1,20 +1,17 @@
-# author: R4tmax
-# Last edit on: 30.06.2023
+# @author: R4tmax
 # Takes the main Python script of the file
 # Automatically lints it a provides a binary depending on
 # the OS which has launched the script
 
-
-# import block
+# Import block
 import PyInstaller.__main__
 import os
 
 # Specify the path to your main Python code file
 current_directory = os.getcwd()
-SCRIPT_PATH = current_directory + r"\KoloStesti.py"
+SCRIPT_PATH = current_directory + r"\wheel_of_luck.py"
 
-
-# runs the PyInstaller main library
+# Runs the PyInstaller main library
 # DOCS: https://pyinstaller.org/en/stable/
 def build_executable(script_path):
     PyInstaller.__main__.run([
@@ -22,8 +19,7 @@ def build_executable(script_path):
         script_path
     ])
 
-
-# specify the root of the script
+# Specify the root of the script
 if __name__ == "__main__":
+    # Call the build_executable function with the script path
     build_executable(SCRIPT_PATH)
-# Call the build_executable function with the script path
