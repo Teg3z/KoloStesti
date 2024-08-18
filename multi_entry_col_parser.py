@@ -1,16 +1,15 @@
 # @author R4tmax
-# Last edit on: 26.06.2023
 # re-parses already existing Collection with multiple entries into a single document collection
 
-# import block
+# Import block
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
 # Configure DB namespace
 uri = "REPLACED_DB_CONNECTION_STRING"
-# # Create a new client and connect to the server
+# Create a new client and connect to the server
 client = MongoClient(uri, server_api=ServerApi('1'))
-# connect to database namespace
+# Connect to database namespace
 db = client['WheelOfLuck']
 
 
