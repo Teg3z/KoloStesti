@@ -4,11 +4,12 @@
 # Import block
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+from env_var_loader import get_env_var_value
 
-# Configure DB namespace
-uri = "REPLACED_DB_CONNECTION_STRING"
+# Connect to the MongoDB server
+DB_CONNECTION_STRING = get_env_var_value("DB_CONNECTION_STRING")
 # Create a new client and connect to the server
-client = MongoClient(uri, server_api=ServerApi('1'))
+client = MongoClient(DB_CONNECTION_STRING, server_api=ServerApi('1'))
 # Connect to database namespace
 db = client['WheelOfLuck']
 
