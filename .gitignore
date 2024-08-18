@@ -1,9 +1,11 @@
+# Do not include compiler cachce from non IDE compilations
 __pycache__
+
+# Do not include installer and binaries into the repository
 build/
 *.spec
 dist/
 
-
-# block IDE custom files
+# Block IDE custom files
 .idea
 .idea/*

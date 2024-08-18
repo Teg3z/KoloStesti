@@ -2,7 +2,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import re
 
-LOGS_PATH = r"REPLACED_PATH\KoloStesti\\"
+LOGS_PATH = r"REPLACED_PATH\\"
 
 GTA_LOGS_PATH = LOGS_PATH + "GTARacy.txt"
 
