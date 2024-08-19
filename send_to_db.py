@@ -1,19 +1,20 @@
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+from env_var_loader import get_env_var_value
 import re
 
-LOGS_PATH = r"C:\Users\Sviha\Desktop\apps\Programming\KoloStesti\\"
+# Add LOGS_PATH value into the variables.env file to send logs from that location into MongoDB
+LOGS_PATH = get_env_var_value("LOGS_PATH")
 
 GTA_LOGS_PATH = LOGS_PATH + "GTARacy.txt"
 
 logs = [GTA_LOGS_PATH]
 
-# pripoj se k DB
-# databaze
-uri = "mongodb+srv://WOFadmin:TRqz3dHcnAbQataY@wheelofluck.tqghhhz.mongodb.net/?retryWrites=true&w=majority"
-# # Create a new client and connect to the server
-client = MongoClient(uri, server_api=ServerApi('1'))
-# connect to database namespace
+# Database connetion
+DB_CONNECTION_STRING = get_env_var_value("DB_CONNECTION_STRING")
+# Create a new client and connect to the server
+client = MongoClient(DB_CONNECTION_STRING, server_api=ServerApi('1'))
+# Connect to database namespace
 db = client['WheelOfLuck']
 
 def retrieveGameDataFromLine(line):
@@ -32,7 +33,6 @@ def sent_to_db(json_data, collection):
     collection.insert_one(json_data)
 
 def main():
-    #try:
     for log in logs:
         file = open(log, "rt")
         line = file.readline()
@@ -42,9 +42,6 @@ def main():
             sent_to_db(json_data, collection)
             line = file.readline()
         file.close()
-    #except Exception as chybaNevimPicoVcem:
-    #    print("Chyba: " + str(chybaNevimPicoVcem))
-    #    exit()
 
 if __name__ == "__main__":
     main()
