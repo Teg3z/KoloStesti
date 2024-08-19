@@ -10,4 +10,4 @@ An epic project of enthusiastic IT students learning basic Python coding. MIT li
 - [Tegez](https://github.com/Teg3z) - Project Leader
 - [Jouker](https://github.com/hajj15) - Project Co-Founder
 - [R4tmax](https://github.com/R4tmax) - SQL and QA Master
-- [GenieLi](https://www.op.gg/summoners/eune/GenieLi-EUNE) - Front-End Developer
+- [GenieLi](https://www.op.gg/summoners/eune/GenieLi-EUNE) - UI Designer
