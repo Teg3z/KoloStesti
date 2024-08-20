@@ -120,11 +120,11 @@ def spin_wheel(games_ui_texts, games):
     return rolled_game_ui_text
 
 # list her, ktere pripadaji v uvahu
-apex = Game("Apex Legends", ["DK", "D", "K", "DKKA", "DKA"], 1)
-pubg = Game("PUBG: Battlegrounds", ["DK", "K", "D", "DKKA", "DKA"], 1)
-csgo = Game("Counter Strike: Global Offensive", ["DK", "D", "DKKA", "DKA"], 1)
-fortnite = Game("Fortnite", ["DK", "D"], 1)
-programming = Game("Programovani kola stesti", ["DK", "D", "DKKA", "DKA"], 1)
+apex = Game("Apex Legends", ["DK", "D", "K", "DKKA", "DKA", "TEST"], 1)
+pubg = Game("PUBG: Battlegrounds", ["DK", "K", "D", "DKKA", "DKA", "TEST"], 1)
+csgo = Game("Counter Strike: Global Offensive", ["DK", "D", "DKKA", "DKA", "TEST"], 1)
+fortnite = Game("Fortnite", ["DK", "D", "TEST"], 1)
+programming = Game("Programovani kola stesti", ["DK", "D", "DKKA", "DKA", "TEST"], 1)
 lost_ark = Game("Lost Ark", ["DK", "D", "K", "DFK"], 1)
 #payday2 = Hra("Payday 2", ["DFK", "DK", "FK", "F", "K"], 1)
 lolko = Game("League of Legends", ["DM", "D", "M", "DF", "DFKM"], 1)
@@ -172,6 +172,8 @@ dkka_button = PySimpleGUI.Button("DKKA", button_color=btn_color, font=font, mous
 dka_button = PySimpleGUI.Button("DKA", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
 win = PySimpleGUI.Button("W", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
 lose = PySimpleGUI.Button("L", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
+test_button = PySimpleGUI.Button("TEST", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
+
 
 
 # Layout creation
@@ -183,7 +185,7 @@ for _ui_game_text in games_ui_texts:
 
 # Adding buttons
 layout.append([result])
-layout.append([dk_button, dfk_button, d_button, dfkm_button, df_button, dkka_button, dka_button])
+layout.append([dk_button, dfk_button, d_button, dfkm_button, df_button, dkka_button, dka_button, test_button])
 layout.append([last_game_result])
 layout.append([win, lose])
 layout.append([winlose])
