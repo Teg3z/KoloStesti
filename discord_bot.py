@@ -4,7 +4,9 @@ from env_var_loader import get_env_var_value
 
 # Getting environment variables
 DISCORD_BOT_TOKEN = get_env_var_value("DISCORD_BOT_TOKEN")
-CHANNEL_ID = get_env_var_value("CHANNEL_ID")
+# Use CHANNEL_ID env var for the actuall usage of the bot.
+# Use TEST_CHANNEL_ID env var for testing purposes.
+CHANNEL_ID = get_env_var_value("TEST_CHANNEL_ID")
 
 # Discord API needs the CHANNEL_ID in form of an integer, not string
 try:
