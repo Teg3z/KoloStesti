@@ -173,8 +173,7 @@ dka_button = PySimpleGUI.Button("DKA", button_color=btn_color, font=font, mouseo
 win = PySimpleGUI.Button("W", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
 lose = PySimpleGUI.Button("L", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
 test_button = PySimpleGUI.Button("TEST", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
-
-
+announce_button = PySimpleGUI.Button("ANNOUNCE", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
 
 # Layout creation
 layout = []
@@ -186,6 +185,7 @@ for _ui_game_text in games_ui_texts:
 # Adding buttons
 layout.append([result])
 layout.append([dk_button, dfk_button, d_button, dfkm_button, df_button, dkka_button, dka_button, test_button])
+layout.append([announce_button])
 layout.append([last_game_result])
 layout.append([win, lose])
 layout.append([winlose])
@@ -209,13 +209,16 @@ while True:
         winlose.update("\n YOU ARE THE BEST" )
         insert_log_into_database(event)
         continue
-    if event == "L":
+    elif event == "L":
         winlose.update("\n YOU SUCK" )
         insert_log_into_database(event)
         continue
-    
+    elif event == "ANNOUNCE":
+        # Call Discord Bot to announce the game that has been rolled
+        discord_bot.StartBot(rolled_game.Get())
+        continue
     # Wheel spin event
-    if event != PySimpleGUI.WIN_CLOSED:
+    elif event != PySimpleGUI.WIN_CLOSED:
         wanted_games_ui_texts, wanted_games = remove_unwated_games(games_ui_texts, games, main_window, event)
         rolled_game = spin_wheel(wanted_games_ui_texts, wanted_games)
         button = event
@@ -223,6 +226,4 @@ while True:
 
     # Window closing event
     insert_last_spin_into_database(button, rolled_game.Get())
-    # Call Discord Bot to announce the game that has been rolled
-    discord_bot.StartBot(rolled_game.Get())
     break
