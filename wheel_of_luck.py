@@ -15,10 +15,11 @@ client = MongoClient(DB_CONNECTION_STRING, server_api=ServerApi('1'))
 # Create database
 db = client['WheelOfLuck']
 
-def get_last_game_played():
+# returns the whole LastSpin record in a string form
+def get_last_spin_string():
     collection = db['LastSpin']
     entry = collection.find_one()
-    return entry['last_game'] 
+    return entry['last_category'] + " - " + entry['last_game'] + " [" + entry['last_game_date'] + "]" 
     
 def insert_last_spin_into_database(category, game):
     collection = db['LastSpin']
@@ -120,18 +121,18 @@ def spin_wheel(games_ui_texts, games):
     return rolled_game_ui_text
 
 # list her, ktere pripadaji v uvahu
-apex = Game("Apex Legends", ["DK", "D", "K", "DKKA", "DKA", "TEST"], 1)
-pubg = Game("PUBG: Battlegrounds", ["DK", "K", "D", "DKKA", "DKA", "TEST"], 1)
-csgo = Game("Counter Strike: Global Offensive", ["DK", "D", "DKKA", "DKA", "TEST"], 1)
-fortnite = Game("Fortnite", ["DK", "D", "TEST"], 1)
-programming = Game("Programovani kola stesti", ["DK", "D", "DKKA", "DKA", "TEST"], 1)
+apex = Game("Apex Legends", ["DK", "D", "K", "DKKA", "DKA"], 1)
+pubg = Game("PUBG: Battlegrounds", ["DK", "K", "D", "DKKA", "DKA",], 1)
+csgo = Game("Counter Strike: Global Offensive", ["DK", "D", "DKKA", "DKA",], 1)
+fortnite = Game("Fortnite", ["DK", "D"], 1)
+programming = Game("Programovani kola stesti", ["DK", "D", "DKKA", "DKA"], 1)
 lost_ark = Game("Lost Ark", ["DK", "D", "K", "DFK"], 1)
 #payday2 = Hra("Payday 2", ["DFK", "DK", "FK", "F", "K"], 1)
 lolko = Game("League of Legends", ["DM", "D", "M", "DF", "DFKM"], 1)
 fall_guys = Game("Fall Guys", ["DFK", "DK", "DF", "FK", "D", "K", "F"], 1)
 overwatch = Game("Overwatch", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKKA", "DKA"], 1)
 gta = Game("Grant Treft Auto V", ["DFK", "F", "DK", "DF"], 1)
-keep_talking = Game("Keep Talking and Nobody Explodes", ["DK", "DF"], 1)
+keep_talking = Game("Keep Talking and Nobody Explodes", ["DK", "DF", "TEST"], 1)
 orcs = Game("Orcs Must Die", ["DK", "K"], 1)
 deceive = Game("Deceive", ["DFK", "DK", "DF"], 1)
 dead_by_daylight = Game("Dead by Daylight", ["DK", "DKKA", "DKA"], 1)
@@ -151,11 +152,9 @@ font = ("Arial", 18)
 
 # texts
 result = PySimpleGUI.Text("", text_color=fg_color, background_color=bg_color, font=font)
-last_game_result = PySimpleGUI.Text("\nJak dopadla minulá hra?", text_color=fg_color, background_color=bg_color, font=font)
+last_game_result = get_last_spin_string()
+last_game_result_ui = PySimpleGUI.Text(f"\nJak dopadla minulá hra? ({last_game_result})", text_color=fg_color, background_color=bg_color, font=font)
 winlose = PySimpleGUI.Text("", text_color=fg_color, background_color=bg_color, font=font)
-
-last_game_text = "Naposledy točeno: " + get_last_game_played()
-last_game_ui_text = PySimpleGUI.Text(last_game_text, text_color=fg_color, background_color=bg_color, font = font)
 
 games_ui_texts = []
 
@@ -186,10 +185,9 @@ for _ui_game_text in games_ui_texts:
 layout.append([result])
 layout.append([dk_button, dfk_button, d_button, dfkm_button, df_button, dkka_button, dka_button, test_button])
 layout.append([announce_button])
-layout.append([last_game_result])
+layout.append([last_game_result_ui])
 layout.append([win, lose])
 layout.append([winlose])
-layout.append([last_game_ui_text])
 
 # Applications main window setup
 main_window = PySimpleGUI.Window(title="Wheel of Luck", layout=layout, background_color=bg_color, use_default_focus=False)
