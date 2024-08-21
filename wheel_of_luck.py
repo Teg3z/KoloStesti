@@ -222,8 +222,7 @@ while True:
         wanted_games_ui_texts, wanted_games = remove_unwated_games(games_ui_texts, games, main_window, event)
         rolled_game = spin_wheel(wanted_games_ui_texts, wanted_games)
         button = event
+        insert_last_spin_into_database(button, rolled_game.Get())
         continue
-
     # Window closing event
-    insert_last_spin_into_database(button, rolled_game.Get())
     break
