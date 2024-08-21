@@ -195,8 +195,6 @@ main_window = PySimpleGUI.Window(title="Wheel of Luck", layout=layout, backgroun
 # Winning game
 rolled_game = games_ui_texts[0]
 
-button = ""
-
 # Each iteration represents a wheel spin
 while True:
     # Reads values from the applications main window
@@ -219,8 +217,7 @@ while True:
     elif event != PySimpleGUI.WIN_CLOSED:
         wanted_games_ui_texts, wanted_games = remove_unwated_games(games_ui_texts, games, main_window, event)
         rolled_game = spin_wheel(wanted_games_ui_texts, wanted_games)
-        button = event
-        insert_last_spin_into_database(button, rolled_game.Get())
+        insert_last_spin_into_database(event, rolled_game.Get())
         continue
     # Window closing event
     break
