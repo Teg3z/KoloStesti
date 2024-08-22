@@ -3,5 +3,3 @@ class Game:
         self.name = name
         self.players = players
         self.percentage = percentage
-
-        

@@ -23,10 +23,22 @@ client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
-  print("We have logged in as {0.user}".format(client))
+  print(f"We have logged in as {client.user}")
   await client.get_channel(DISCORD_CHANNEL_ID).send("Jdeme hrát " + game + ", chce se někdo přidat?")
   # Anaconda problem???
-  await client.close()
+  # await client.close()
+
+@client.event
+async def on_message(message):
+    # Ensure the bot doesn't respond to itself
+    if message.author == client.user:
+        return
+
+    # Check if the message starts with "!games"
+    if message.content.startswith("!games"):
+        await message.channel.send("You invoked the games command!")
+
+    # You can add more conditions here for other commands if needed
 
 def StartBot(rolled_game):
   global game
