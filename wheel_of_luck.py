@@ -4,16 +4,10 @@ import PySimpleGUI
 import discord_bot
 from datetime import datetime
 from game import Game
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
 from env_var_loader import get_env_var_value
+from db_handler import connect_to_db
 
-# Connect to the MongoDB server
-DB_CONNECTION_STRING = get_env_var_value("DB_CONNECTION_STRING")
-# Create a new client and connect to the server
-client = MongoClient(DB_CONNECTION_STRING, server_api=ServerApi('1'))
-# Create database
-db = client['WheelOfLuck']
+db = connect_to_db()
 
 # returns the whole LastSpin record in a string form
 def get_last_spin_string():

@@ -18,13 +18,13 @@ def connect_to_db():
     # Connect to database namespace
     return client['WheelOfLuck']
 
-def retrieveGameDataFromLine(line):
+def retrieve_game_data_from_line(line):
         post = {
             "race_name": line,
         }
         return post
 
-def getCollection(path):
+def get_collection(path):
     match = re.search(r"(Logs.+?)\.txt", path)
     if match:
          captureGroup = match.group(1)    
@@ -40,7 +40,7 @@ def main():
         file = open(log, "rt")
         line = file.readline()
         while line:
-            json_data = retrieveGameDataFromLine(line)
+            json_data = retrieve_game_data_from_line(line)
             collection = db['GTARaces']
             sent_to_db(json_data, collection)
             line = file.readline()
