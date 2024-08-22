@@ -20,6 +20,23 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 client = discord.Client(intents=intents)
+games = """
+Apex Legends
+PUBG: Battlegrounds
+Counter Strike: Global Offensive
+Fortnite
+Programovani kola stesti
+Lost Ark
+League of Legends
+Fall Guys
+Overwatch
+Grant Treft Auto V
+Keep Talking and Nobody Explodes
+Orcs Must Die
+Deceive
+Dead by Daylight
+Dying Light
+"""
 
 @client.event
 async def on_ready():
@@ -36,7 +53,7 @@ async def on_message(message):
 
     # Check if the message starts with "!games"
     if message.content.startswith("!games"):
-        await message.channel.send("You invoked the games command!")
+        await message.channel.send(f"List her v kole štěstí: \n{games}")
 
     # You can add more conditions here for other commands if needed
 
