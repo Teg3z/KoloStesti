@@ -16,6 +16,13 @@ DB_CONNECTION_STRING = get_env_var_value("DB_CONNECTION_STRING")
 client = MongoClient(DB_CONNECTION_STRING, server_api=ServerApi('1'))
 # Connect to database namespace
 db = client['WheelOfLuck']
+# Database connetion
+def connect_to_db():
+    DB_CONNECTION_STRING = get_env_var_value("DB_CONNECTION_STRING")
+    # Create a new client and connect to the server
+    client = MongoClient(DB_CONNECTION_STRING, server_api=ServerApi('1'))
+    # Connect to database namespace
+    db = client['WheelOfLuck']
 
 def retrieveGameDataFromLine(line):
         post = {
