@@ -11,18 +11,12 @@ GTA_LOGS_PATH = LOGS_PATH + "GTARacy.txt"
 logs = [GTA_LOGS_PATH]
 
 # Database connetion
-DB_CONNECTION_STRING = get_env_var_value("DB_CONNECTION_STRING")
-# Create a new client and connect to the server
-client = MongoClient(DB_CONNECTION_STRING, server_api=ServerApi('1'))
-# Connect to database namespace
-db = client['WheelOfLuck']
-# Database connetion
 def connect_to_db():
     DB_CONNECTION_STRING = get_env_var_value("DB_CONNECTION_STRING")
     # Create a new client and connect to the server
     client = MongoClient(DB_CONNECTION_STRING, server_api=ServerApi('1'))
     # Connect to database namespace
-    db = client['WheelOfLuck']
+    return client['WheelOfLuck']
 
 def retrieveGameDataFromLine(line):
         post = {
@@ -40,6 +34,8 @@ def sent_to_db(json_data, collection):
     collection.insert_one(json_data)
 
 def main():
+    db = connect_to_db()
+
     for log in logs:
         file = open(log, "rt")
         line = file.readline()
