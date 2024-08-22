@@ -3,13 +3,6 @@ from pymongo.server_api import ServerApi
 from env_var_loader import get_env_var_value
 import re
 
-# Add LOGS_PATH value into the variables.env file to send logs from that location into MongoDB
-LOGS_PATH = get_env_var_value("LOGS_PATH")
-
-GTA_LOGS_PATH = LOGS_PATH + "GTARacy.txt"
-
-logs = [GTA_LOGS_PATH]
-
 # Database connetion
 def connect_to_db():
     DB_CONNECTION_STRING = get_env_var_value("DB_CONNECTION_STRING")
@@ -17,6 +10,14 @@ def connect_to_db():
     client = MongoClient(DB_CONNECTION_STRING, server_api=ServerApi('1'))
     # Connect to database namespace
     return client['WheelOfLuck']
+
+def get_logs():
+    # Add LOGS_PATH value into the variables.env file to send logs from that location into MongoDB
+    LOGS_PATH = get_env_var_value("LOGS_PATH")
+
+    GTA_LOGS_PATH = LOGS_PATH + "GTARacy.txt"
+
+    return [GTA_LOGS_PATH]
 
 def retrieve_game_data_from_line(line):
         post = {
@@ -36,6 +37,7 @@ def sent_to_db(json_data, collection):
 def main():
     db = connect_to_db()
 
+    logs = get_logs()
     for log in logs:
         file = open(log, "rt")
         line = file.readline()

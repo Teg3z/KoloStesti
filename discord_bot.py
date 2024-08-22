@@ -43,7 +43,7 @@ async def on_ready():
   print(f"We have logged in as {client.user}")
   await client.get_channel(DISCORD_CHANNEL_ID).send("Jdeme hrát " + game + ", chce se někdo přidat?")
   # Anaconda problem???
-  # await client.close()
+  await client.close()
 
 @client.event
 async def on_message(message):
