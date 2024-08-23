@@ -1,6 +1,9 @@
 import discord
 import sys
 from env_var_loader import get_env_var_value
+from db_handler import connect_to_db
+from db_handler import get_list_of_games
+from db_handler import get_list_of_users_games
 
 # Getting environment variables
 DISCORD_BOT_TOKEN = get_env_var_value("DISCORD_BOT_TOKEN")
@@ -20,23 +23,8 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 client = discord.Client(intents=intents)
-games = """
-Apex Legends
-PUBG: Battlegrounds
-Counter Strike: Global Offensive
-Fortnite
-Programovani kola stesti
-Lost Ark
-League of Legends
-Fall Guys
-Overwatch
-Grant Treft Auto V
-Keep Talking and Nobody Explodes
-Orcs Must Die
-Deceive
-Dead by Daylight
-Dying Light
-"""
+db = connect_to_db()
+games = get_list_of_games(db)
 
 @client.event
 async def on_ready():
@@ -50,10 +38,20 @@ async def on_message(message):
         return
 
     # Check if the message starts with "!games"
-    if message.content.startswith("!games"):
-        await message.channel.send(f"List her v kole štěstí: \n{games}")
+    if message.content.startswith("!"):
+        if message.content == "!games":
+          # Ensure no extra spaces or newlines are present in each game name
+          await message.channel.send(f"List her v kole štěstí: \n\n{make_list_printable(games)}")
+        elif message.content == "!mygames":
+          # Get the games list of the author of the message
+          users_games = get_list_of_users_games(db, message.author.name)
+          await message.channel.send(f"Tvůj list her: \n\n{make_list_printable(users_games)}")
 
     # You can add more conditions here for other commands if needed
+
+# Makes the lists items stripped of any extra white characters and every item will be on its separate line
+def make_list_printable(list):
+   return "\n".join(item.strip() for item in list)
 
 def StartBot(rolled_game):
   global game
