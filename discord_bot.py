@@ -66,6 +66,9 @@ async def start_bot():
   # Wait for the bot to login and then can continue the code with bot ready to operate
   await bot_ready_event.wait()
 
+async def logout():
+  await client.close()
+
 async def main():
     # Start the Discord bot as a task
     bot_task = asyncio.create_task(start_bot())

@@ -220,6 +220,7 @@ async def main():
             insert_last_spin_into_database(db, event, rolled_game.Get())
             continue
         # Window closing event
+        await discord_bot.logout()
         break
 
 if __name__ == "__main__":
