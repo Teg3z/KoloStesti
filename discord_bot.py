@@ -1,3 +1,4 @@
+import asyncio
 import discord
 import sys
 from env_var_loader import get_env_var_value
@@ -26,10 +27,13 @@ client = discord.Client(intents=intents)
 db = connect_to_db()
 games = get_list_of_games(db)
 
+# Create an asyncio Event
+bot_ready_event = asyncio.Event()
+
 @client.event
 async def on_ready():
   print(f"We have logged in as {client.user}")
-  await client.get_channel(DISCORD_CHANNEL_ID).send("Jdeme hrát " + game + ", chce se někdo přidat?")
+  bot_ready_event.set()
 
 @client.event
 async def on_message(message):
@@ -53,15 +57,23 @@ async def on_message(message):
 def make_list_printable(list):
    return "\n".join(item.strip() for item in list)
 
-def StartBot(rolled_game):
-  global game
-  game = rolled_game
+async def send_message(message):
+  await client.get_channel(DISCORD_CHANNEL_ID).send(message)
 
-  client.run(DISCORD_BOT_TOKEN)
+async def start_bot():
+  # Runs the bot asynchronously in the background since client.start is a blocking function
+  asyncio.create_task(client.start(DISCORD_BOT_TOKEN))
+  # Wait for the bot to login and then can continue the code with bot ready to operate
+  await bot_ready_event.wait()
 
-def main():
-  StartBot("Just Testing")
+async def main():
+    # Start the Discord bot as a task
+    bot_task = asyncio.create_task(start_bot())
+    
+    await asyncio.sleep(5)
+
+    await bot_task
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
 

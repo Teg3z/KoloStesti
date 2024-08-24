@@ -5,6 +5,7 @@ import discord_bot
 from datetime import datetime
 from game import Game
 from db_handler import connect_to_db
+import asyncio
 
 # returns the whole LastSpin record in a string form
 def get_last_spin_string(db):
@@ -109,8 +110,11 @@ def spin_wheel(games_ui_texts, games, main_window, result_ui):
 
     return rolled_game_ui_text
 
-def main():
+async def main():
     db = connect_to_db()
+
+    # Start the Discord bot asynchronously
+    await discord_bot.start_bot()
 
     # All the playable games
     apex = Game("Apex Legends", ["DK", "D", "K", "DKKA", "DKA"], 1)
@@ -165,6 +169,7 @@ def main():
     lose = PySimpleGUI.Button("L", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
     test_button = PySimpleGUI.Button("TEST", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
     announce_button = PySimpleGUI.Button("ANNOUNCE", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
+    reaction_play_button  = PySimpleGUI.Button("REACTION PLAY", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
 
     # Layout creation
     layout = []
@@ -176,6 +181,7 @@ def main():
     # Adding buttons
     layout.append([result_ui])
     layout.append([dk_button, dfk_button, d_button, dfkm_button, df_button, dkka_button, dka_button, test_button])
+    layout.append([reaction_play_button])
     layout.append([announce_button])
     layout.append([last_game_result_ui])
     layout.append([win, lose])
@@ -201,9 +207,11 @@ def main():
             winlose.update("\n YOU SUCK" )
             insert_log_into_database(db, event)
             continue
+        elif event == "REACTION PLAY":
+            continue
         elif event == "ANNOUNCE":
             # Call Discord Bot to announce the game that has been rolled
-            discord_bot.StartBot(rolled_game.Get())
+            await discord_bot.send_message("Jdeme hrát " + rolled_game.Get() + ", chce se někdo přidat?")
             continue
         # Wheel spin event
         elif event != PySimpleGUI.WIN_CLOSED:
@@ -215,4 +223,4 @@ def main():
         break
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
