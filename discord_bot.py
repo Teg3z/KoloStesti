@@ -58,7 +58,22 @@ def make_list_printable(list):
    return "\n".join(item.strip() for item in list)
 
 async def send_message(message):
-  await client.get_channel(DISCORD_CHANNEL_ID).send(message)
+  message = await client.get_channel(DISCORD_CHANNEL_ID).send(message)
+  return message.id
+
+async def get_reactions_users(message_id, channel_id = DISCORD_CHANNEL_ID):
+    channel = client.get_channel(channel_id)
+    message = await channel.fetch_message(message_id)
+
+    # Use a set to store unique user names
+    users = set()
+
+    for reaction in message.reactions:
+      reaction_users = [user.name async for user in reaction.users()]
+      users.update(reaction_users)
+
+    return list(users)
+
 
 async def start_bot():
   # Runs the bot asynchronously in the background since client.start is a blocking function
@@ -71,11 +86,13 @@ async def logout():
 
 async def main():
     # Start the Discord bot as a task
-    bot_task = asyncio.create_task(start_bot())
-    
-    await asyncio.sleep(5)
+    await start_bot()
 
-    await bot_task
+    # users = await get_reactions_users()
+
+    # On terminating the code
+    await logout()
+
 
 if __name__ == '__main__':
     asyncio.run(main())

@@ -41,12 +41,12 @@ def insert_log_into_database(db, result):
 
     collection.insert_one(post)
 
-def remove_unwated_games(games_ui_texts, games, window, kdo_chce_hrat):
+def remove_unwated_games(games_ui_texts, games, window, players):
     wanted_games_ui_texts = []
     wanted_games = []
 
     for index in range(0,len(games_ui_texts)):
-        if kdo_chce_hrat in games[index].players:
+        if players in games[index].players:
             window[games_ui_texts[index].key].Update(visible = True)
             wanted_games_ui_texts.append(games_ui_texts[index])
             wanted_games.append(games[index])
@@ -169,7 +169,9 @@ async def main():
     lose = PySimpleGUI.Button("L", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
     test_button = PySimpleGUI.Button("TEST", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
     announce_button = PySimpleGUI.Button("ANNOUNCE", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
-    reaction_play_button  = PySimpleGUI.Button("REACTION PLAY", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
+    send_reaction_message_button  = PySimpleGUI.Button("SEND REACTION", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
+    play_by_reactions_button  = PySimpleGUI.Button("PLAY REACTION", button_color=btn_color, font=font, mouseover_colors=btn_mouseover_color, size=btn_size)
+
 
     # Layout creation
     layout = []
@@ -181,7 +183,7 @@ async def main():
     # Adding buttons
     layout.append([result_ui])
     layout.append([dk_button, dfk_button, d_button, dfkm_button, df_button, dkka_button, dka_button, test_button])
-    layout.append([reaction_play_button])
+    layout.append([send_reaction_message_button, play_by_reactions_button])
     layout.append([announce_button])
     layout.append([last_game_result_ui])
     layout.append([win, lose])
@@ -207,7 +209,12 @@ async def main():
             winlose.update("\n YOU SUCK" )
             insert_log_into_database(db, event)
             continue
-        elif event == "REACTION PLAY":
+        elif event == "SEND REACTION":
+            message_id = await discord_bot.send_message("Jde se točit kolem štěští! Kdo se zapojí?")
+            continue
+        elif event == "PLAY REACTION":
+            players = await discord_bot.get_reactions_users(message_id)
+            # TODO get list of games that those players have in common
             continue
         elif event == "ANNOUNCE":
             # Call Discord Bot to announce the game that has been rolled
