@@ -16,9 +16,9 @@ An epic project of enthusiastic IT students learning basic Python coding. MIT li
 4. Install the required packages:
 - `pip install -r requirements.txt`
 5. Create variables.env file
+- See variables.env.example file
 6. Run the application:
 - `python wheel_of_luck.py`
-
 
 ## Project Maintainers
 
