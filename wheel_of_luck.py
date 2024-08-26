@@ -7,6 +7,7 @@ from game import Game
 from db_handler import connect_to_db
 from db_handler import get_list_of_users_games
 import asyncio
+import threading
 
 # returns the whole LastSpin record in a string form
 def get_last_spin_string(db):
@@ -137,11 +138,31 @@ def spin_wheel(games_ui_texts, games, main_window, result_ui):
 
     return rolled_game_ui_text
 
+def start_discord_bot():
+    bot_thread = threading.Thread(target=discord_bot.run_bot, daemon=True)
+    bot_thread.start()
+    return bot_thread
+
+def send_message_to_discord(message):
+    # Run the send_message coroutine in the bot's event loop
+    future = asyncio.run_coroutine_threadsafe(discord_bot.send_message(message), discord_bot.client.loop)
+    message_id = future.result()
+    return message_id
+
+def get_reactions_users(message_id):
+    # Run the send_message coroutine in the bot's event loop
+    future = asyncio.run_coroutine_threadsafe(discord_bot.get_reactions_users(message_id), discord_bot.client.loop)
+    users = future.result()
+    return users
+
+def logout_discord_bot():
+    asyncio.run_coroutine_threadsafe(discord_bot.logout(), discord_bot.client.loop)
+
 async def main():
     db = connect_to_db()
 
-    # Start the Discord bot asynchronously
-    await discord_bot.start_bot()
+    # Start the Discord bot
+    bot_thread = start_discord_bot()
 
     # All the playable games
     apex = Game("Apex Legends", ["DK", "D", "K", "DKKA", "DKA"], 1)
@@ -237,14 +258,14 @@ async def main():
             insert_log_into_database(db, event)
             continue
         elif event == "SEND REACTION":
-            message_id = await discord_bot.send_message("Jde se točit kolem štěští! Kdo se zapojí?")
+            message_id = send_message_to_discord("Jde se točit kolem štěští! Kdo se zapojí?")
             continue
         elif event == "PLAY REACTION":
-            players = await discord_bot.get_reactions_users(message_id)
+            players = get_reactions_users(message_id)
 
             # No reaction case
             if not players:
-                await discord_bot.send_message("Nikdo nechce točit :(")
+                send_message_to_discord("Nikdo nechce točit :(")
                 continue
 
             # Get list of games that those players have in common
@@ -272,7 +293,7 @@ async def main():
             continue
         elif event == "ANNOUNCE":
             # Call Discord Bot to announce the game that has been rolled
-            await discord_bot.send_message("Jdeme hrát " + rolled_game.Get() + ", chce se někdo přidat?")
+            send_message_to_discord("Jdeme hrát " + rolled_game.Get() + ", chce se někdo přidat?")
             continue
         # Wheel spin event
         elif event != PySimpleGUI.WIN_CLOSED:
@@ -281,7 +302,10 @@ async def main():
             insert_last_spin_into_database(db, rolled_game.Get(), category=event)
             continue
         # Window closing event
-        await discord_bot.logout()
+        # Properly shutting down the bot and its loop
+        logout_discord_bot()
+        # Wait for the logout operation to end, closing the discord bot thread
+        bot_thread.join()
         break
 
 if __name__ == "__main__":

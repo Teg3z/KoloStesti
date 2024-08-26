@@ -74,26 +74,21 @@ async def get_reactions_users(message_id, channel_id = DISCORD_CHANNEL_ID):
 
     return list(users)
 
-
-async def start_bot():
-  # Runs the bot asynchronously in the background since client.start is a blocking function
-  asyncio.create_task(client.start(DISCORD_BOT_TOKEN))
-  # Wait for the bot to login and then can continue the code with bot ready to operate
-  await bot_ready_event.wait()
+def run_bot():
+    asyncio.run(client.start(DISCORD_BOT_TOKEN))
 
 async def logout():
   await client.close()
 
-async def main():
+def main():
     # Start the Discord bot as a task
-    await start_bot()
+    run_bot()
 
-    # users = await get_reactions_users()
+    #users = await get_reactions_users()
 
     # On terminating the code
-    await logout()
-
+    # await logout()
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()
 
