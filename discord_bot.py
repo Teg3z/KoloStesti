@@ -32,34 +32,33 @@ bot_ready_event = asyncio.Event()
 
 @client.event
 async def on_ready():
-  print(f"We have logged in as {client.user}")
-  bot_ready_event.set()
+    print(f"We have logged in as {client.user}")
+    bot_ready_event.set()
 
 @client.event
 async def on_message(message):
     # Ensure the bot doesn't respond to itself
     if message.author == client.user:
         return
-
     # Check if the message starts with "!games"
     if message.content.startswith("!"):
         if message.content == "!games":
-          # Ensure no extra spaces or newlines are present in each game name
-          await message.channel.send(f"List her v kole štěstí: \n\n{make_list_printable(games)}")
+            # Ensure no extra spaces or newlines are present in each game name
+            await message.channel.send(f"List her v kole štěstí: \n\n{make_list_printable(games)}")
         elif message.content == "!mygames":
-          # Get the games list of the author of the message
-          users_games = get_list_of_users_games(db, message.author.name)
-          await message.channel.send(f"Tvůj list her: \n\n{make_list_printable(users_games)}")
+            # Get the games list of the author of the message
+            users_games = get_list_of_users_games(db, message.author.name)
+            await message.channel.send(f"Tvůj list her: \n\n{make_list_printable(users_games)}")
 
     # You can add more conditions here for other commands if needed
 
 # Makes the lists items stripped of any extra white characters and every item will be on its separate line
 def make_list_printable(list):
-   return "\n".join(item.strip() for item in list)
+    return "\n".join(item.strip() for item in list)
 
 async def send_message(message):
-  message = await client.get_channel(DISCORD_CHANNEL_ID).send(message)
-  return message.id
+    message = await client.get_channel(DISCORD_CHANNEL_ID).send(message)
+    return message.id
 
 async def get_reactions_users(message_id, channel_id = DISCORD_CHANNEL_ID):
     channel = client.get_channel(channel_id)
@@ -69,8 +68,8 @@ async def get_reactions_users(message_id, channel_id = DISCORD_CHANNEL_ID):
     users = set()
 
     for reaction in message.reactions:
-      reaction_users = [user.name async for user in reaction.users()]
-      users.update(reaction_users)
+        reaction_users = [user.name async for user in reaction.users()]
+        users.update(reaction_users)
 
     return list(users)
 
@@ -78,7 +77,7 @@ def run_bot():
     asyncio.run(client.start(DISCORD_BOT_TOKEN))
 
 async def logout():
-  await client.close()
+    await client.close()
 
 def main():
     # Start the Discord bot as a task
