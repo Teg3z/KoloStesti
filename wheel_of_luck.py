@@ -5,6 +5,7 @@ import discord_bot
 from datetime import datetime
 from game import Game
 from db_handler import connect_to_db
+from db_handler import get_list_of_users_games
 import asyncio
 
 # returns the whole LastSpin record in a string form
@@ -13,20 +14,31 @@ def get_last_spin_string(db):
     entry = collection.find_one()
     return entry['last_category'] + " - " + entry['last_game'] + " [" + entry['last_game_date'] + "]" 
     
-def insert_last_spin_into_database(db, category, game):
-    collection = db['LastSpin']
-    entry = collection.find_one()
-    filter = {'_id': entry['_id']}
-
-    # When was last game spinned
+def insert_last_spin_into_database(db, game, category = None, players = None):
+    # Create the time of the spin
     time = datetime.today().strftime("%d/%m/%Y %H:%M:%S")
     
-    new_values = { "$set": { 
+    # Select the correct collection from the DB and create the new data values to enter
+    if players is not None:
+        collection = db['LastSpinReaction']
+        new_values = { "$set": { 
+        "last_game": game,
+        "last_game_date": time,
+        "players": players
+         }
+    }
+    elif category is not None:
+        collection = db['LastSpin']
+        new_values = { "$set": { 
         "last_category" : category,
         "last_game": game,
         "last_game_date": time
          }
     }
+
+    # Get the single entry that will be updated
+    entry = collection.find_one()
+    filter = {'_id': entry['_id']}
     
     collection.update_one(filter, new_values)
 
@@ -47,6 +59,21 @@ def remove_unwated_games(games_ui_texts, games, window, players):
 
     for index in range(0,len(games_ui_texts)):
         if players in games[index].players:
+            window[games_ui_texts[index].key].Update(visible = True)
+            wanted_games_ui_texts.append(games_ui_texts[index])
+            wanted_games.append(games[index])
+        else:
+            window[games_ui_texts[index].key].Update(visible = False)
+
+    window.refresh()  
+    return wanted_games_ui_texts, wanted_games
+
+def remove_unwated_games_reactions_based(games_ui_texts, games, window, common_games):
+    wanted_games_ui_texts = []
+    wanted_games = []
+
+    for index in range(0,len(games_ui_texts)):
+        if games[index].name in common_games:
             window[games_ui_texts[index].key].Update(visible = True)
             wanted_games_ui_texts.append(games_ui_texts[index])
             wanted_games.append(games[index])
@@ -214,7 +241,34 @@ async def main():
             continue
         elif event == "PLAY REACTION":
             players = await discord_bot.get_reactions_users(message_id)
-            # TODO get list of games that those players have in common
+
+            # No reaction case
+            if not players:
+                await discord_bot.send_message("Nikdo nechce točit :(")
+                continue
+
+            # Get list of games that those players have in common
+            is_first_player = True 
+            for player in players:
+                # Inicialize the list of common games by the first player
+                if is_first_player:
+                    common_games = get_list_of_users_games(db, player)
+                    is_first_player = False
+                    continue
+                # Get current players list of games
+                player_games = get_list_of_users_games(db, player)
+                
+                # Keep only the games that are still in the common_games list and also in the current players list 
+                updated_games_list = []
+                for game in common_games:
+                    if game in player_games:
+                        updated_games_list.append(game)
+                common_games = updated_games_list
+            
+            # Wheel setup and spinning
+            wanted_games_ui_texts, wanted_games = remove_unwated_games_reactions_based(games_ui_texts, games, main_window, common_games)
+            rolled_game = spin_wheel(wanted_games_ui_texts, wanted_games, main_window, result_ui)
+            insert_last_spin_into_database(db, rolled_game.Get(), players=players)
             continue
         elif event == "ANNOUNCE":
             # Call Discord Bot to announce the game that has been rolled
@@ -224,7 +278,7 @@ async def main():
         elif event != PySimpleGUI.WIN_CLOSED:
             wanted_games_ui_texts, wanted_games = remove_unwated_games(games_ui_texts, games, main_window, event)
             rolled_game = spin_wheel(wanted_games_ui_texts, wanted_games, main_window, result_ui)
-            insert_last_spin_into_database(db, event, rolled_game.Get())
+            insert_last_spin_into_database(db, rolled_game.Get(), category=event)
             continue
         # Window closing event
         await discord_bot.logout()

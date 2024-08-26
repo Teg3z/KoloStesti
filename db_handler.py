@@ -36,7 +36,7 @@ def get_list_of_games(db):
 
 def get_list_of_users_games(db, user_name):
     collection = db["Players"]
-    user = collection.find_one({"discord_id": user_name})
+    user = collection.find_one({"name": user_name})
     return user["games"]
 
 
