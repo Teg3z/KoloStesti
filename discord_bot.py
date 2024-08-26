@@ -1,6 +1,6 @@
+import sys
 import asyncio
 import discord
-import sys
 from env_var_loader import get_env_var_value
 from db_handler import connect_to_db
 from db_handler import get_list_of_games
