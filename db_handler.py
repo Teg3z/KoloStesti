@@ -27,18 +27,36 @@ def retrieve_game_data_from_line(line):
 
 def get_list_of_games(db):
     games = []
-
     collection = db["Games"]
+
     for query in collection.find():
         games.append(query["name"])
 
+    # Sort the games alphabetically
+    games.sort()
     return games
 
 def get_list_of_users_games(db, user_name):
     collection = db["Players"]
     user = collection.find_one({"name": user_name})
-    return user["games"]
+    user_games = user["games"]
+    # Sort the games alphabetically
+    user_games.sort()
+    return user_games
 
+def add_game_to_users_games_list(db, user_name, game):
+    collection = db["Players"]
+    collection.update_one(
+        {"name": user_name},
+        {"$addToSet": {"games": game}}
+    )
+
+def remove_game_from_users_games_list(db, user_name, game):
+    collection = db["Players"]
+    collection.update_one(
+        {"name": user_name},
+        {"$pull": {"games": game}}
+    )
 
 def get_collection(path):
     match = re.search(r"(Logs.+?)\.txt", path)
@@ -56,17 +74,6 @@ def main():
     # Now you can perform operations on the collection, such as finding all players
     for query in collection:
         print(query)
-
-    # logs = get_logs()
-    # for log in logs:
-    #     file = open(log, "rt")
-    #     line = file.readline()
-    #     while line:
-    #         json_data = retrieve_game_data_from_line(line)
-    #         collection = db['GTARaces']
-    #         sent_to_db(json_data, collection)
-    #         line = file.readline()
-    #     file.close()
 
 if __name__ == "__main__":
     main()
