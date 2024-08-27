@@ -6,7 +6,7 @@ This module handles all the Discord bot interactions between the Wheel_of_luck a
 Main Functions:
 - on_ready: An event handler for when the Discord bot is succesfully logged in.
 - send_message: Sends a message via the Discord bot to a specified channel.
-- get_reactions_users: Retrieves a list of users that put any reaction on the specific message.
+- get_reaction_users: Retrieves a list of users that put any reaction on the specific message.
 - run_bot: The main starting point of the Discord bot.
 - logout: Closing the currently opened Discord client.
 
@@ -80,14 +80,14 @@ async def on_message(message):
             await message.channel.send(f"List her v kole štěstí: \n\n{make_list_printable(games)}")
         elif message.content == "!mygames":
             # Get the games list of the author of the message
-            users_games = db_handler.get_list_of_users_games(db, message.author.name)
+            users_games = db_handler.get_list_of_user_games(db, message.author.name)
             await message.channel.send(f"Tvůj list her: \n\n{make_list_printable(users_games)}")
         elif message.content.startswith("!mygames add "):
             # Extract the game name
             game_to_add = message.content[len("!mygames add "):].strip()
 
             if game_to_add in games:
-                db_handler.add_game_to_users_games_list(db, message.author.name, game_to_add)
+                db_handler.add_game_to_user_game_list(db, message.author.name, game_to_add)
                 await message.channel.send(
                     f"Hra '{game_to_add}' byla úspěšně přidána do tvého seznamu her."
                 )
@@ -100,7 +100,7 @@ async def on_message(message):
             game_to_remove = message.content[len("!mygames remove "):].strip()
 
             if game_to_remove in games:
-                db_handler.remove_game_from_users_games_list(db,message.author.name,game_to_remove)
+                db_handler.remove_game_from_user_game_list(db,message.author.name,game_to_remove)
                 await message.channel.send(
                     f"Hra '{game_to_remove}' byla úspěšně odebrána z tvého seznamu her."
                 )
@@ -139,7 +139,7 @@ async def send_message(message, discord_channel_id = DISCORD_CHANNEL_ID):
     message = await client.get_channel(discord_channel_id).send(message)
     return message.id
 
-async def get_reactions_users(message_id, channel_id = DISCORD_CHANNEL_ID):
+async def get_reaction_users(message_id, channel_id = DISCORD_CHANNEL_ID):
     """
     Retrieves a list of users that put any reaction on the specific message in Discord chat.
 

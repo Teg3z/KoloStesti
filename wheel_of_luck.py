@@ -5,7 +5,7 @@ import discord_bot
 from datetime import datetime
 from game import Game
 from db_handler import connect_to_db
-from db_handler import get_list_of_users_games
+from db_handler import get_list_of_user_games
 import asyncio
 import threading
 
@@ -151,7 +151,7 @@ def send_message_to_discord(message):
 
 def get_reactions_users(message_id):
     # Run the send_message coroutine in the bot's event loop
-    future = asyncio.run_coroutine_threadsafe(discord_bot.get_reactions_users(message_id), discord_bot.client.loop)
+    future = asyncio.run_coroutine_threadsafe(discord_bot.get_reaction_users(message_id), discord_bot.client.loop)
     users = future.result()
     return users
 
@@ -273,11 +273,11 @@ async def main():
             for player in players:
                 # Inicialize the list of common games by the first player
                 if is_first_player:
-                    common_games = get_list_of_users_games(db, player)
+                    common_games = get_list_of_user_games(db, player)
                     is_first_player = False
                     continue
                 # Get current players list of games
-                player_games = get_list_of_users_games(db, player)
+                player_games = get_list_of_user_games(db, player)
                 
                 # Keep only the games that are still in the common_games list and also in the current players list 
                 updated_games_list = []

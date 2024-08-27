@@ -6,9 +6,9 @@ This module contains database handling functions.
 Main Functions:
 - connect_to_db: Establishes a connection to the MongoDB database.
 - get_list_of_games: Retrieves a list of all games from the database.
-- get_list_of_users_games: Retrieves a list of games associated with a specific user.
-- add_game_to_users_games_list: Adds a game to a user's list of games in the database.
-- remove_game_from_users_games_list: Removes a game from a user's list of games in the database.
+- get_list_of_user_games: Retrieves a list of games associated with a specific user.
+- add_game_to_user_game_list: Adds a game to a user's list of games in the database.
+- remove_game_from_user_game_list: Removes a game from a user's list of games in the database.
 
 Dependencies:
 - Requires pymongo for MongoDB interactions.
@@ -66,7 +66,7 @@ def get_list_of_games(db):
     games.sort()
     return games
 
-def get_list_of_users_games(db, user_name):
+def get_list_of_user_games(db, user_name):
     """
     Retrieves a list of all games from the MongoDB database in alphabetically sorted order
     for the specified user.
@@ -85,7 +85,7 @@ def get_list_of_users_games(db, user_name):
     user_games.sort()
     return user_games
 
-def add_game_to_users_games_list(db, user_name, game):
+def add_game_to_user_game_list(db, user_name, game):
     """
     Adds a game name to the users list of games in the database.
 
@@ -103,7 +103,7 @@ def add_game_to_users_games_list(db, user_name, game):
         {"$addToSet": {"games": game}}
     )
 
-def remove_game_from_users_games_list(db, user_name, game):
+def remove_game_from_user_game_list(db, user_name, game):
     """
     Removes a game name from the users list of games in the database.   
 
@@ -131,7 +131,7 @@ def main():
         None 
     """
     db = connect_to_db()
-    collection = get_list_of_users_games(db, "tegez")
+    collection = get_list_of_user_games(db, "tegez")
 
     # Now you can perform operations on the collection, such as finding all players
     for query in collection:
