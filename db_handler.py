@@ -3,7 +3,7 @@ db_handler.py
 
 This module contains database handling functions.
 
-Functions:
+Main Functions:
 - connect_to_db: Establishes a connection to the MongoDB database.
 - get_list_of_games: Retrieves a list of all games from the database.
 - get_list_of_users_games: Retrieves a list of games associated with a specific user.
