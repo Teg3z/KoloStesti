@@ -1,19 +1,33 @@
-# @author: R4tmax
-# Takes the main Python script of the file
-# Automatically lints it a provides a binary depending on
-# the OS which has launched the script
+"""
+installer.py
 
-# Import block
-import PyInstaller.__main__
+Takes the main Python script of the file, automatically lints it and provides
+a binary depending on the OS which has launched the script.
+
+Main Functions:
+- build_executable:
+
+Dependencies:
+- Requires pyinstaller
+"""
+
 import os
+import PyInstaller.__main__
 
 # Specify the path to your main Python code file
 current_directory = os.getcwd()
 SCRIPT_PATH = current_directory + r"\wheel_of_luck.py"
 
-# Runs the PyInstaller main library
-# DOCS: https://pyinstaller.org/en/stable/
 def build_executable(script_path):
+    """
+    Runs the PyInstaller main library. DOCS: https://pyinstaller.org/en/stable/
+    
+    Parameters:
+        script_path (string): A path to the main script of the application (wheel_of_luck.py).
+
+    Returns:
+        None
+    """
     PyInstaller.__main__.run([
         '--onefile',
         script_path
