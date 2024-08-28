@@ -5,10 +5,10 @@ Takes the main Python script of the file, automatically lints it and provides
 a binary depending on the OS which has launched the script.
 
 Main Functions:
-- build_executable:
+- build_executable: Runs the PyInstaller main library.
 
 Dependencies:
-- Requires pyinstaller
+- Requires pyinstaller that makes the actual conversion of the .py script to an executable.
 """
 
 import os
