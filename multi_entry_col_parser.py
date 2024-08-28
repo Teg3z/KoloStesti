@@ -18,7 +18,8 @@ def parse_entries(import_collection, key="race_name"):
     From collection, parses each value of specified key of all documents into a list.
 
     Parameters:
-        import_collection (pymongo.collection.Collection): The MongoDB collection with documents to be parsed.
+        import_collection (pymongo.collection.Collection):
+            The MongoDB collection with documents to be parsed.
         key (string): The key name.
     
     Returns:
@@ -53,8 +54,8 @@ def main():
     """
     The main entry point of the script.
 
-    Defines the `import_collection` from which will the documents be parsed into a list. That list will then
-    be inserted into the `export_collection` adn sorted alphabetically.
+    Defines the `import_collection` from which will the documents be parsed into a list.
+    That list will then be inserted into the `export_collection` adn sorted alphabetically.
 
     Returns:
         None 
@@ -66,7 +67,8 @@ def main():
     export_collection.insert_one(document=parse_entries(import_collection))
 
     # Call with empty list will simply sort the array in the document
-    append_to_array([], db['GTARacesPrototype'])  # Specify Race names AS A LIST, and the target Collection
+    # Specify Race names AS A LIST, and the target Collection
+    append_to_array([], db['GTARacesPrototype'])
 
 if __name__ == '__main__':
     main()
