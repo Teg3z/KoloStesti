@@ -52,6 +52,7 @@ async def on_ready():
     """
     An event handler for when the Discord bot is succesfully
     logged in and ready to receive commands.
+    
     Only announces that the bot is ready in the console.
 
     Returns:
