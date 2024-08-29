@@ -472,7 +472,7 @@ async def main():
     # Each iteration represents a wheel spin
     while True:
         # Reads values from the applications main window
-        event = main_window.read()
+        event, _ = main_window.read()
 
         # Pressing W/L buttons condition
         if event == "W":
