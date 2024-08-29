@@ -7,7 +7,8 @@ An epic project of enthusiastic IT students learning basic Python coding. MIT li
 
 ## Setup Instructions for Developers
 1. Clone the repository:
-- `https://github.com/Teg3z/Wheel-of-Luck.git`
+- `git clone https://github.com/Teg3z/Wheel-of-Luck.git`
+- (with all branches) `git fetch -all`
 2. Create a virtual environment: 
 - `python -m venv venv`
 3. Activate the virtual environment:
