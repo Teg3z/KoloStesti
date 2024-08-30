@@ -1,52 +1,74 @@
-# @author R4tmax
-# re-parses already existing Collection with multiple entries into a single document collection
+"""
+multi_entry_col_parser.py
 
-# Import block
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
-from env_var_loader import get_env_var_value
+Re-parses already existing Collection with multiple entries into a single document collection.
 
-# Connect to the MongoDB server
-DB_CONNECTION_STRING = get_env_var_value("DB_CONNECTION_STRING")
-# Create a new client and connect to the server
-client = MongoClient(DB_CONNECTION_STRING, server_api=ServerApi('1'))
-# Connect to database namespace
-db = client['WheelOfLuck']
+Main Functions:
+- parse_entries: Establishes a connection to the MongoDB database.
+- append_to_array: Retrieves a list of all games from the database.
 
+Dependencies:
+- Requires `connect_to_db` from `db_handler` for establishing connection to MongoDB.
+"""
 
-# takes input collection as argument
-# parses each document key - value pair into a list
-# returns the values as a simple list
-def parse_entries(import_collection):
+from db_handler import connect_to_db
+
+def parse_entries(import_collection, key="race_name"):
+    """
+    From collection, parses each value of specified key of all documents into a list.
+
+    Parameters:
+        import_collection (pymongo.collection.Collection):
+            The MongoDB collection with documents to be parsed.
+        key (string): The key name.
+    
+    Returns:
+        Dictionary: A simple dictionary representing a MongoDB document containing the list. 
+    """
     tmp_array = []
     for entry in import_collection.find():
-        tmp_array.append(entry.get('race_name'))  # specify the expected key of the attribute
+        tmp_array.append(entry.get(key))
+    # Replace new lines
     tmp_array = [entry.replace('\n', '') for entry in tmp_array]
     document = {
-        'race_list': tmp_array
+        'list': tmp_array
     }
-
     return document
 
-
-# Takes target collection and expected Race Name as argument,
-# appends it to the array, sorts it alphabetically
-# and modifies the document, in this manner, via code.
-# Modification CAN BE DONE via MongoDB admin
 def append_to_array(race_name, collection):
-    collection.update_one({}, {'$push': {'race_list': {'$each': race_name}}})
-    collection.update_one({}, {'$push': {'race_list': {'$each': [], '$sort': 1}}})
+    """
+    Takes target collection and expected Race Name, appends it to the array, sorts it alphabetically
+    and modifies the document, in this manner, via code. Modification CAN BE DONE via MongoDB admin.
 
+    Parameters:
+        race_name (string): The name of the race to be added into the collection.
+        collection (pymongo.collection.Collection): The MongoDB collection.
+    
+    Returns:
+        None
+    """
+    collection.update_one({}, {'$push': {'list': {'$each': race_name}}})
+    collection.update_one({}, {'$push': {'list': {'$each': [], '$sort': 1}}})
 
 def main():
-    # import_collection = db['GTARaces']  # specify the source collection with redundant data
-    # export_collection = db['GTARacesPrototype']  # specify the expected location of the new data
+    """
+    The main entry point of the script.
 
-    # export_collection.insert_one(document=parseEntries(import_collection))
+    Defines the `import_collection` from which will the documents be parsed into a list.
+    That list will then be inserted into the `export_collection` adn sorted alphabetically.
 
-    # call with empty list will simply sort the array in the document
-    append_to_array([], db['GTARacesPrototype'])  # Specify Race names AS A LIST, and the target Collection
+    Returns:
+        None 
+    """
+    db = connect_to_db()
+    import_collection = db['GTARaces']
+    export_collection = db['GTARacesPrototype']
 
+    export_collection.insert_one(document=parse_entries(import_collection))
+
+    # Call with empty list will simply sort the array in the document
+    # Specify Race names AS A LIST, and the target Collection
+    append_to_array([], db['GTARacesPrototype'])
 
 if __name__ == '__main__':
     main()

@@ -5,6 +5,22 @@ Spin the Wheel Of Luck that randomly chooses the game for you. Make your own lis
 
 An epic project of enthusiastic IT students learning basic Python coding. MIT license of course.
 
+## Setup Instructions for Developers
+1. Clone the repository:
+- `git clone https://github.com/Teg3z/Wheel-of-Luck.git`
+- (with all branches) `git fetch --all`
+2. Create a virtual environment: 
+- `python -m venv venv`
+3. Activate the virtual environment:
+- **Windows**: `venv\Scripts\activate`
+- **macOS/Linux**: `source venv/bin/activate`
+4. Install the required packages:
+- `pip install -r requirements.txt`
+5. Create variables.env file
+- See variables.env.example file
+6. Run the application:
+- `python wheel_of_luck.py`
+
 ## Project Maintainers
 
 - [Tegez](https://github.com/Teg3z) - Project Leader
