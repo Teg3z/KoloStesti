@@ -12,3 +12,6 @@ dist/
 # Block IDE custom files
 .idea
 .idea/*
+
+# Python environments
+venv/
