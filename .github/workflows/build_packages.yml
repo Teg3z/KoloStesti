@@ -36,7 +36,7 @@ jobs:
     - name: Build EXE (Windows Only)
       if: matrix.os == 'windows-latest'
       run: |
-        pyinstaller --onefile your_script.py
+        pyinstaller --onefile wheel_of_luck.py
         ls dist
 
     - name: Build DEB and RPM (Linux Only)
@@ -44,8 +44,8 @@ jobs:
       run: |
         sudo apt-get install -y ruby ruby-dev rubygems build-essential
         sudo gem install --no-document fpm
-        fpm -s python -t deb your_python_package
-        fpm -s python -t rpm your_python_package
+        fpm -s python -t deb WoLrpmpackage
+        fpm -s python -t rpm WoLfpmpackage
         ls *.deb *.rpm
 
     - name: Upload MSI
