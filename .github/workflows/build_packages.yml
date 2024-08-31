@@ -1,0 +1,111 @@
+name: Build and Release Packages
+
+on:
+  release:
+    types: [published]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+    - name: Check out the code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install cx_Freeze pyinstaller
+
+    - name: Build MSI (Windows Only)
+      if: matrix.os == 'windows-latest'
+      run: |
+        python setup.py bdist_msi
+        ls dist
+
+    - name: Build EXE (Windows Only)
+      if: matrix.os == 'windows-latest'
+      run: |
+        pyinstaller --onefile your_script.py
+        ls dist
+
+    - name: Build DEB and RPM (Linux Only)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get install -y ruby ruby-dev rubygems build-essential
+        sudo gem install --no-document fpm
+        fpm -s python -t deb your_python_package
+        fpm -s python -t rpm your_python_package
+        ls *.deb *.rpm
+
+    - name: Upload MSI
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: MSI
+        path: dist/*.msi
+
+    - name: Upload EXE
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: EXE
+        path: dist/*.exe
+
+    - name: Upload DEB
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: DEB
+        path: ./*.deb
+
+    - name: Upload RPM
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: RPM
+        path: ./*.rpm
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: ./artifacts
+
+    - name: Upload MSI to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: artifacts/MSI/*.msi
+      if: steps.download.outputs.found
+
+    - name: Upload EXE to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: artifacts/EXE/*.exe
+      if: steps.download.outputs.found
+
+    - name: Upload DEB to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: artifacts/DEB/*.deb
+      if: steps.download.outputs.found
+
+    - name: Upload RPM to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: artifacts/RPM/*.rpm
+      if: steps.download.outputs.found
