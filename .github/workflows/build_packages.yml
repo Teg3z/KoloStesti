@@ -9,10 +9,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-
     steps:
     - name: Check out the code
       uses: actions/checkout@v4
@@ -27,54 +23,18 @@ jobs:
         python -m pip install --upgrade pip
         pip install cx_Freeze pyinstaller
 
-    - name: Build MSI (Windows Only)
-      if: matrix.os == 'windows-latest'
+    - name: Build packages
       run: |
         python setup.py bdist_msi
+        python setup.py bdist_mac
+        python setup.py bdist_deb
+        python setup.py bdist_rpm
         ls dist
 
-    - name: Build EXE (Windows Only)
-      if: matrix.os == 'windows-latest'
-      run: |
-        pyinstaller --onefile wheel_of_luck.py
-        ls dist
-
-    - name: Build DEB and RPM (Linux Only)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get install -y ruby ruby-dev rubygems build-essential
-        sudo gem install --no-document fpm
-        fpm -s python -t deb WoLrpmpackage
-        fpm -s python -t rpm WoLfpmpackage
-        ls *.deb *.rpm
-
-    - name: Upload MSI
-      if: matrix.os == 'windows-latest'
+    - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: MSI
-        path: dist/*.msi
-
-    - name: Upload EXE
-      if: matrix.os == 'windows-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: EXE
-        path: dist/*.exe
-
-    - name: Upload DEB
-      if: matrix.os == 'ubuntu-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: DEB
-        path: ./*.deb
-
-    - name: Upload RPM
-      if: matrix.os == 'ubuntu-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: RPM
-        path: ./*.rpm
+        path: dist/*
 
   release:
     needs: build
@@ -92,10 +52,10 @@ jobs:
         files: artifacts/MSI/*.msi
       if: steps.download.outputs.found
 
-    - name: Upload EXE to Release
+    - name: Upload APP to Release
       uses: softprops/action-gh-release@v1
       with:
-        files: artifacts/EXE/*.exe
+        files: artifacts/APP/*.app
       if: steps.download.outputs.found
 
     - name: Upload DEB to Release
