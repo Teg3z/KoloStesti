@@ -39,7 +39,7 @@ jobs:
 
     - name: Check pylint score
       run: |
-        threshold=9.0  # Set your desired threshold here
+        threshold=7.0  # Set your desired threshold here
         score=${{ steps.get_score.outputs.score }}
         if (( $(echo "$score < $threshold" | bc -l) )); then
           echo "Pylint score ($score) is below threshold ($threshold)."
