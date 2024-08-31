@@ -144,7 +144,7 @@ def choose_winning_game(games):
     winning_games = random.choices(list(games),weights=percentages, k=1)
     return winning_games[0]
 
-def spin_wheel(games_ui_texts, games, main_window, result_ui):
+async def spin_wheel(games_ui_texts, games, main_window, result_ui):
     """
     The whole wheel spinning logic is in this function.
     
@@ -199,7 +199,7 @@ def spin_wheel(games_ui_texts, games, main_window, result_ui):
                 break
 
             # Increase the interval of the next spin, mimicking a spinning wheel
-            time.sleep(interval)
+            await asyncio.sleep(interval)
             interval+=0.02
 
     # Print out the spin result
@@ -523,7 +523,7 @@ async def main():
                 main_window,
                 common_games
             )
-            rolled_game = spin_wheel(wanted_games_ui_texts, wanted_games, main_window, result_ui)
+            rolled_game = await spin_wheel(wanted_games_ui_texts, wanted_games, main_window, result_ui)
             db_handler.update_last_spin(db, rolled_game.Get(), players=players)
             continue
         if event == "ANNOUNCE":
@@ -538,7 +538,7 @@ async def main():
                 main_window,
                 event
             )
-            rolled_game = spin_wheel(wanted_games_ui_texts, wanted_games, main_window, result_ui)
+            rolled_game = await spin_wheel(wanted_games_ui_texts, wanted_games, main_window, result_ui)
             db_handler.update_last_spin(db, rolled_game.Get(), category=event)
             continue
         # Window closing event
