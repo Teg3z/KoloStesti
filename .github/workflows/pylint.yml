@@ -30,6 +30,22 @@ jobs:
     - name: CAT output
       run: cat lint.txt
 
+    - name: Extract pylint score
+      id: get_score
+      run: |
+        score=$(grep -oP 'rated at \K[0-9]+\.[0-9]+' lint.txt)
+        echo "Pylint score is $score"
+        echo "::set-output name=score::$score"
+
+    - name: Check pylint score
+      run: |
+        threshold=7.0  # Set your desired threshold here
+        score=${{ steps.get_score.outputs.score }}
+        if (( $(echo "$score < $threshold" | bc -l) )); then
+          echo "Pylint score ($score) is below threshold ($threshold)."
+          exit 1
+        fi
+
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
