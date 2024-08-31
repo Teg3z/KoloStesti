@@ -25,7 +25,7 @@ jobs:
 
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files '*.py') --output=lint.txt || true
+        pylint $(git ls-files '*.py') --disable=E0401 --output=lint.txt || true
 
     - name: CAT output
       run: cat lint.txt
@@ -39,7 +39,7 @@ jobs:
 
     - name: Check pylint score
       run: |
-        threshold=7.0  # Set your desired threshold here
+        threshold=8.0  # Set your desired threshold here
         score=${{ steps.get_score.outputs.score }}
         if (( $(echo "$score < $threshold" | bc -l) )); then
           echo "Pylint score ($score) is below threshold ($threshold)."
