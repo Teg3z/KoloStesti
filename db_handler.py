@@ -54,7 +54,7 @@ def get_last_spin_string(db):
     formatted_time = entry['last_game_date'].strftime("%d/%m/%Y %H:%M:%S")
 
     return entry['last_category'] + " - " + entry['last_game'] + \
-        " [" + str(formatted_time) + "]"
+        " [" + formatted_time + "]"
 
 def update_last_spin(db, game, category = None, players = None):
     """
