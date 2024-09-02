@@ -8,7 +8,7 @@ Maintains the wheel spinning logic and sends results into a MongoDB database.
 
 Main Functions:
 - remove_unwated_games:
-    Hides every game in the wheels UI that doesn't have the correct category.
+    Hides every game in the wheels UI that isn't mentioned in the `common_games` parameter.
 - choose_winning_game:
     Randomly chooses one game out of a list of Game objects based on their desire percentage.
 - spin_wheel:
@@ -29,7 +29,6 @@ Dependencies:
 """
 
 import random
-import time
 import asyncio
 import threading
 import PySimpleGUI
@@ -37,38 +36,7 @@ import discord_bot
 import db_handler
 from game import Game
 
-def remove_unwated_games(games_ui_texts, games, window, players):
-    """
-    Hides every game in the wheels UI that doesn't have the correct category
-    of `players` spinning the wheel.
-
-    Parameters:
-        games_ui_texts (PySimpleGUI.Text): UI texts of all the game names.
-        games (list[Game]): A list of all games represented by Game objects.
-        window (PySimpleGUI.Window): The main UI window of the application.
-        players (string): The category name for which the wheel will be spinned.
-
-    Returns:
-        list[PySimpleGUI.Text]:
-            Contains all UI texts of games that will be visible during the spin.
-        list[Game]:
-            Contains all the Game objects having the desired players category.
-    """
-    wanted_games_ui_texts = []
-    wanted_games = []
-
-    for index in range(0,len(games_ui_texts)):
-        if players in games[index].players:
-            window[games_ui_texts[index].key].Update(visible = True)
-            wanted_games_ui_texts.append(games_ui_texts[index])
-            wanted_games.append(games[index])
-        else:
-            window[games_ui_texts[index].key].Update(visible = False)
-
-    window.refresh()
-    return wanted_games_ui_texts, wanted_games
-
-def remove_unwated_games_reactions_based(games_ui_texts, games, window, common_games):
+def remove_unwated_games(game_ui_texts, games, window, common_games):
     """
     Hides every game in the wheels UI that isn't mentioned in the `common_games` parameter.
 
@@ -84,19 +52,20 @@ def remove_unwated_games_reactions_based(games_ui_texts, games, window, common_g
         list[Game]:
             Contains all the Game objects with the game names that the players have in common.
     """
-    wanted_games_ui_texts = []
+    wanted_game_ui_texts = []
     wanted_games = []
 
-    for index in range(0,len(games_ui_texts)):
-        if games[index].name in common_games:
-            window[games_ui_texts[index].key].Update(visible = True)
-            wanted_games_ui_texts.append(games_ui_texts[index])
+    for index, game_ui_text in enumerate(game_ui_texts):
+        if game_ui_text.key in common_games:
+            window[game_ui_text.key].Update(visible = True)
+            wanted_game_ui_texts.append(game_ui_text)
+            # The lists games and game_ui_texts are in the same order, so indexing works
             wanted_games.append(games[index])
         else:
-            window[games_ui_texts[index].key].Update(visible = False)
+            window[game_ui_text.key].Update(visible = False)
 
     window.refresh()
-    return wanted_games_ui_texts, wanted_games
+    return wanted_game_ui_texts, wanted_games
 
 def make_all_games_texts_visible(games_ui_texts, window):
     """
@@ -320,7 +289,7 @@ async def main():
     result_ui = PySimpleGUI.Text("", text_color=fg_color, background_color=bg_color, font=font)
     last_game_result = db_handler.get_last_spin_string(db)
     last_game_result_ui = PySimpleGUI.Text(
-        f"\nJak dopadla minulá hra? ({last_game_result})",
+        f"\nJak dopadla minulá hra? \n({last_game_result})",
         text_color=fg_color,
         background_color=bg_color,
         font=font
@@ -339,55 +308,6 @@ async def main():
         ))
 
     # Buttons
-    dk_button = PySimpleGUI.Button(
-        "DK",
-        button_color=btn_color,
-        font=font,
-        mouseover_colors=btn_mouseover_color,
-        size=btn_size
-    )
-    dfk_button = PySimpleGUI.Button(
-        "DFK",
-        button_color=btn_color,
-        font=font,
-        mouseover_colors=btn_mouseover_color,
-        size=btn_size
-    )
-    d_button = PySimpleGUI.Button(
-        "D",
-        button_color=btn_color,
-        font=font,
-        mouseover_colors=btn_mouseover_color,
-        size=btn_size
-    )
-    dfkm_button = PySimpleGUI.Button(
-        "DFKM",
-        button_color=btn_color,
-        font=font,
-        mouseover_colors=btn_mouseover_color,
-        size=btn_size
-    )
-    df_button = PySimpleGUI.Button(
-        "DF",
-        button_color=btn_color,
-        font=font,
-        mouseover_colors=btn_mouseover_color,
-        size=btn_size
-    )
-    dkka_button = PySimpleGUI.Button(
-        "DKKA",
-        button_color=btn_color,
-        font=font,
-        mouseover_colors=btn_mouseover_color,
-        size=btn_size
-    )
-    dka_button = PySimpleGUI.Button(
-        "DKA",
-        button_color=btn_color,
-        font=font,
-        mouseover_colors=btn_mouseover_color,
-        size=btn_size
-    )
     win = PySimpleGUI.Button(
         "W",
         button_color=btn_color,
@@ -397,13 +317,6 @@ async def main():
     )
     lose = PySimpleGUI.Button(
         "L",
-        button_color=btn_color,
-        font=font,
-        mouseover_colors=btn_mouseover_color,
-        size=btn_size
-    )
-    test_button = PySimpleGUI.Button(
-        "TEST",
         button_color=btn_color,
         font=font,
         mouseover_colors=btn_mouseover_color,
@@ -440,16 +353,6 @@ async def main():
 
     # Adding buttons
     layout.append([result_ui])
-    layout.append([
-        dk_button,
-        dfk_button,
-        d_button,
-        dfkm_button,
-        df_button,
-        dkka_button,
-        dka_button,
-        test_button
-    ])
     layout.append([send_reaction_message_button, play_by_reactions_button])
     layout.append([announce_button])
     layout.append([last_game_result_ui])
@@ -464,9 +367,8 @@ async def main():
         use_default_focus=False
     )
 
-    # Winning game
-    rolled_game = games_ui_texts[0]
-    # React message presence
+    # Initiate variables
+    rolled_game = None
     message_id = None
 
     # Each iteration represents a wheel spin
@@ -517,29 +419,26 @@ async def main():
                 common_games = updated_games_list
 
             # Wheel setup and spinning
-            wanted_games_ui_texts, wanted_games = remove_unwated_games_reactions_based(
+            wanted_game_ui_texts, wanted_games = remove_unwated_games(
                 games_ui_texts,
                 games,
                 main_window,
                 common_games
             )
-            rolled_game = await spin_wheel(wanted_games_ui_texts, wanted_games, main_window, result_ui)
+            rolled_game = await spin_wheel(
+                wanted_game_ui_texts,
+                wanted_games,
+                main_window,
+                result_ui
+            )
             db_handler.update_last_spin(db, rolled_game.Get(), players=players)
             continue
-        if event == "ANNOUNCE":
-            # Call Discord Bot to announce the game that has been rolled
-            send_message_to_discord("Jdeme hrát " + rolled_game.Get() + ", chce se někdo přidat?")
-            continue
-        # Wheel spin event
-        if event != PySimpleGUI.WIN_CLOSED:
-            wanted_games_ui_texts, wanted_games = remove_unwated_games(
-                games_ui_texts,
-                games,
-                main_window,
-                event
-            )
-            rolled_game = await spin_wheel(wanted_games_ui_texts, wanted_games, main_window, result_ui)
-            db_handler.update_last_spin(db, rolled_game.Get(), category=event)
+        if  event == "ANNOUNCE":
+            if rolled_game is not None:
+                # Call Discord Bot to announce the game that has been rolled
+                send_message_to_discord(
+                    "Jdeme hrát " + rolled_game.Get() + ", chce se někdo přidat?"
+                )
             continue
         # Window closing event
         # Properly shutting down the bot and its loop
