@@ -51,8 +51,10 @@ def get_last_spin_string(db):
     """
     collection = db['LastSpin']
     entry = collection.find_one()
+    formatted_time = entry['last_game_date'].strftime("%d/%m/%Y %H:%M:%S")
+
     return entry['last_category'] + " - " + entry['last_game'] + \
-        " [" + entry['last_game_date'] + "]"
+        " [" + formatted_time + "]"
 
 def update_last_spin(db, game, category = None, players = None):
     """
@@ -82,7 +84,7 @@ def update_last_spin(db, game, category = None, players = None):
         None
     """
     # Create the time of the spin
-    time = datetime.today().strftime("%d/%m/%Y %H:%M:%S")
+    time = datetime.now()
 
     # Select the correct collection from the DB and create the new data values to enter
     if players is not None:
