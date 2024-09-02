@@ -53,31 +53,20 @@ def get_last_spin_string(db):
     entry = collection.find_one()
     formatted_time = entry['last_game_date'].strftime("%d/%m/%Y %H:%M:%S")
 
-    return entry['last_category'] + " - " + entry['last_game'] + \
+    return str(entry['players']) + " - " + entry['last_game'] + \
         " [" + formatted_time + "]"
 
-def update_last_spin(db, game, category = None, players = None):
+def update_last_spin(db, game, players):
     """
     Updates the last spin in the MongoDB collection.
 
-    After a wheel spin, the last spin needs to be updated based on which of the two approaches
-    was chosen - either a spin based on `category` (group buttons like "DK", "DKKA") or `players`
-    (button "REACTION PLAY" - based on message reactions).
-
-    In their respective cases either the parameter `category` or parameter `players` is set,
-    but only one of them every time.
-
-    After that the function takes the current time as the time of the spin.
-    Game that was rolled during the spin is put in as an argument.
-    Both of those are inserted into a dictionary representing a MongoDB document. 
+    The function takes the current time as the time of the spin.
 
     Parameters:
         db (pymongo.mongo_client.MongoClient):
             An instance of a MongoClient connected to the specified database.
         game (string): The name of the game that was rolled during the spin.
-        category (string, optional): The name of the category that initiated the spin.
-            Basically the button name.
-        players (List, optional): The list of players who participated in the wheel spin.
+        players (List): The list of players who participated in the wheel spin.
             (By reacting to the bots Discord message). 
 
     Returns:
@@ -88,25 +77,11 @@ def update_last_spin(db, game, category = None, players = None):
 
     # Select the correct collection from the DB and create the new data values to enter
     if players is not None:
-        collection = db['LastSpinReaction']
+        collection = db['LastSpin']
         new_values = { "$set": {
             "last_game": game,
             "last_game_date": time,
             "players": players
-            }
-        }
-        # Get the single entry that will be updated
-        entry = collection.find_one()
-        id_filter = {'_id': entry['_id']}
-
-        collection.update_one(id_filter, new_values)
-
-    elif category is not None:
-        collection = db['LastSpin']
-        new_values = { "$set": {
-            "last_category" : category,
-            "last_game": game,
-            "last_game_date": time
             }
         }
         # Get the single entry that will be updated
@@ -131,11 +106,14 @@ def insert_log_into_database(db, result):
     """
     collection = db['LastSpin']
     entry = collection.find_one()
-    collection = db["Logs" + entry['last_category']]
+    collection = db['Logs']
 
-    post = {"game_date": entry['last_game_date'],
-            "game": entry['last_game'],
-            "result": result}
+    post = {
+        "game_date": entry['last_game_date'],
+        "game": entry['last_game'],
+        "result": result,
+        "players": entry['players']
+    }
 
     collection.insert_one(post)
 
