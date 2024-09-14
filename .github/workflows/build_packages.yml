@@ -31,6 +31,7 @@ jobs:
     - name: Build packages
       run: |
         touch variables.env
+        rpm --version
         ls .
         python setup.py build
         python setup.py bdist_rpm
