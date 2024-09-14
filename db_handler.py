@@ -76,19 +76,18 @@ def update_last_spin(db, game, players):
     time = datetime.now()
 
     # Select the correct collection from the DB and create the new data values to enter
-    if players is not None:
-        collection = db['LastSpin']
-        new_values = { "$set": {
-            "last_game": game,
-            "last_game_date": time,
-            "players": players
-            }
+    collection = db['LastSpin']
+    new_values = { "$set": {
+        "last_game": game,
+        "last_game_date": time,
+        "players": players
         }
-        # Get the single entry that will be updated
-        entry = collection.find_one()
-        id_filter = {'_id': entry['_id']}
+    }
+    # Get the single entry that will be updated
+    entry = collection.find_one()
+    id_filter = {'_id': entry['_id']}
 
-        collection.update_one(id_filter, new_values)
+    collection.update_one(id_filter, new_values)
 
 def insert_log_into_database(db, result):
     """
