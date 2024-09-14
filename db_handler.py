@@ -80,7 +80,8 @@ def update_last_spin(db, game, players):
     new_values = { "$set": {
         "last_game": game,
         "last_game_date": time,
-        "players": players
+        "players": players,
+        "is_inserted": False
         }
     }
     # Get the single entry that will be updated
@@ -88,6 +89,12 @@ def update_last_spin(db, game, players):
     id_filter = {'_id': entry['_id']}
 
     collection.update_one(id_filter, new_values)
+
+def check_last_spin_insertion(entry):
+    is_inserted = False
+    if entry["is_inserted"]:
+        is_inserted = True
+    return is_inserted
 
 def insert_log_into_database(db, result):
     """
@@ -105,8 +112,17 @@ def insert_log_into_database(db, result):
     """
     collection = db['LastSpin']
     entry = collection.find_one()
+    id_filter = {'_id': entry['_id']}
+    if not check_last_spin_insertion(entry):
+        new_values = { "$set": {
+            "is_inserted": True
+            }
+        }
+        collection.update_one(id_filter, new_values)
+    else:
+        return
+    
     collection = db['Logs']
-
     post = {
         "game_date": entry['last_game_date'],
         "game": entry['last_game'],
