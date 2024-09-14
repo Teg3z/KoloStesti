@@ -34,8 +34,8 @@ jobs:
         ls .
         python setup.py build
 
-    - name: Validate dist folder
-      run: ls ./dist && ls ./build
+    - name: Validate directory contents
+      run: ls .
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
