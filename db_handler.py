@@ -91,6 +91,17 @@ def update_last_spin(db, game, players):
     collection.update_one(id_filter, new_values)
 
 def is_last_spin_inserted(db):
+    """
+    Checks whether the last spin in the DB was already inserted or not.
+
+    Parameters:
+        db (pymongo.mongo_client.MongoClient):
+            An instance of a MongoClient connected to the specified database.
+    Returns:
+        tuple: A tuple containing:
+            - bool: A boolean indicating whether the last spin was already inserted into the logs.
+            - entry (dictionary): The last spin document.
+    """
     collection = db['LastSpin']
     entry = collection.find_one()
 
@@ -101,8 +112,8 @@ def is_last_spin_inserted(db):
 def insert_log_into_database(db, result):
     """
     Gets all information from the last spin in the database and inserts
-    a new document with the `result` parameter into the correspoding collection
-    by the category of the last spin. Doesn't yet support "REACTION PLAY"
+    a new document with the `result` parameter. Only inserts when the last spin
+    wasn't already inserted before.
 
     Parameters:
         db (pymongo.mongo_client.MongoClient):
