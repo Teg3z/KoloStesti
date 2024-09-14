@@ -1,5 +1,4 @@
 from cx_Freeze import setup, Executable
-import sys
 
 # Dependencies are automatically detected, but it might need
 # fine tuning.
@@ -8,10 +7,10 @@ build_options = {'packages': ['dns','dns.resolver','dns.rdatatype'],
                  'include_files': [('variables.env', 'variables.env')]
                  }
 
-base = "gui"
+BASE = "gui"
 
 executables = [
-    Executable('wheel_of_luck.py', base=base)
+    Executable('wheel_of_luck.py', base=BASE)
 ]
 
 setup(name='WheelOfLuck',
