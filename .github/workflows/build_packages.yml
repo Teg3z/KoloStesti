@@ -54,25 +54,25 @@ jobs:
         overwrite: true
 
     - name: Upload MSI to Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
-        files: artifacts/MSI/*.msi
-      if: steps.download.outputs.found
+        files: artifacts/*.msi
+
 
     - name: Upload APP to Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
-        files: artifacts/APP/*.app
-      if: steps.download.outputs.found
+        files: artifacts/*.app
+
 
     - name: Upload DEB to Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
-        files: artifacts/DEB/*.deb
-      if: steps.download.outputs.found
+        files: artifacts/*.deb
+
 
     - name: Upload RPM to Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
-        files: artifacts/RPM/*.rpm
-      if: steps.download.outputs.found
+        files: artifacts/*.rpm
+
