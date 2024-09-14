@@ -38,7 +38,7 @@ jobs:
       run: ls .
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         path: dist/*
 
@@ -51,6 +51,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         path: ./artifacts
+        overwrite: true
 
     - name: Upload MSI to Release
       uses: softprops/action-gh-release@v1
