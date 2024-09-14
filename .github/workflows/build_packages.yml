@@ -1,4 +1,4 @@
-name: Build and Release Packages
+name: Build_and_Release_Packages
 
 on:
   release:
