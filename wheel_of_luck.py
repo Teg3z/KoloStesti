@@ -238,6 +238,15 @@ def logout_discord_bot():
     """
     asyncio.run_coroutine_threadsafe(discord_bot.logout(), discord_bot.client.loop)
 
+def change_last_spin_insertion_visibility(window, db, visible):
+    window["W"].Update(visible=visible)
+    window["L"].Update(visible=visible)
+    window["LAST_GAME"].Update(visible=visible)
+    if visible:
+        window["LAST_GAME"].Update(value=db_handler.get_last_spin_string(db))
+
+    window.refresh()
+
 async def main():
     """
     The main entry point of the application.
@@ -288,12 +297,16 @@ async def main():
     # Texts
     result_ui = PySimpleGUI.Text("", text_color=fg_color, background_color=bg_color, font=font)
     last_game_result = db_handler.get_last_spin_string(db)
+    is_last_spin_inserted, _ = db_handler.is_last_spin_inserted(db)
     last_game_result_ui = PySimpleGUI.Text(
         f"\nJak dopadla minulá hra? \n({last_game_result})",
         text_color=fg_color,
         background_color=bg_color,
-        font=font
+        font=font,
+        key="LAST_GAME",
+        visible= not is_last_spin_inserted
     )
+
     winlose = PySimpleGUI.Text("", text_color=fg_color, background_color=bg_color, font=font)
 
     games_ui_texts = []
@@ -313,14 +326,16 @@ async def main():
         button_color=btn_color,
         font=font,
         mouseover_colors=btn_mouseover_color,
-        size=btn_size
+        size=btn_size,
+        visible=not is_last_spin_inserted
     )
     lose = PySimpleGUI.Button(
         "L",
         button_color=btn_color,
         font=font,
         mouseover_colors=btn_mouseover_color,
-        size=btn_size
+        size=btn_size,
+        visible=not is_last_spin_inserted
     )
     announce_button = PySimpleGUI.Button(
         "ANNOUNCE",
@@ -380,10 +395,12 @@ async def main():
         if event == "W":
             winlose.update("\n YOU ARE THE BEST" )
             db_handler.insert_log_into_database(db, event)
+            change_last_spin_insertion_visibility(main_window, db, False)
             continue
         if event == "L":
             winlose.update("\n YOU SUCK" )
             db_handler.insert_log_into_database(db, event)
+            change_last_spin_insertion_visibility(main_window, db, False)
             continue
         if event == "SEND REACTION":
             message_id = send_message_to_discord("Jde se točit kolem štěští! Kdo se zapojí?")
@@ -432,6 +449,8 @@ async def main():
                 result_ui
             )
             db_handler.update_last_spin(db, rolled_game.Get(), players=players)
+            # Show insertion
+            change_last_spin_insertion_visibility(main_window, db, True)
             continue
         if  event == "ANNOUNCE":
             if rolled_game is not None:
