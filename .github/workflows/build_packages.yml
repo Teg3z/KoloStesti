@@ -26,10 +26,6 @@ jobs:
         pip install cx_Freeze 
         pip install -r requirements.txt
         python setup.py build
-#       python setup.py bdist_msi
-#       python setup.py bdist_mac
-#       python setup.py bdist_deb
-#       python setup.py bdist_rpm
         ls ./dist
         ls ./build
 
