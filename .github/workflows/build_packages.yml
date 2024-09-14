@@ -33,8 +33,6 @@ jobs:
         touch variables.env
         ls .
         python setup.py build
-        ls ./dist
-        ls ./build
 
     - name: Validate dist folder
       run: ls ./dist && ls ./build
