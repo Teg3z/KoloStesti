@@ -41,6 +41,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         path: dist/*
+        overwrite: true
 
   release:
     needs: build
@@ -51,7 +52,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         path: ./artifacts
-        overwrite: true
+
 
     - name: Upload MSI to Release
       uses: softprops/action-gh-release@v2
