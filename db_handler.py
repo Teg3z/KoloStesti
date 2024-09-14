@@ -76,19 +76,27 @@ def update_last_spin(db, game, players):
     time = datetime.now()
 
     # Select the correct collection from the DB and create the new data values to enter
-    if players is not None:
-        collection = db['LastSpin']
-        new_values = { "$set": {
-            "last_game": game,
-            "last_game_date": time,
-            "players": players
-            }
+    collection = db['LastSpin']
+    new_values = { "$set": {
+        "last_game": game,
+        "last_game_date": time,
+        "players": players,
+        "is_inserted": False
         }
-        # Get the single entry that will be updated
-        entry = collection.find_one()
-        id_filter = {'_id': entry['_id']}
+    }
+    # Get the single entry that will be updated
+    entry = collection.find_one()
+    id_filter = {'_id': entry['_id']}
 
-        collection.update_one(id_filter, new_values)
+    collection.update_one(id_filter, new_values)
+
+def is_last_spin_inserted(db):
+    collection = db['LastSpin']
+    entry = collection.find_one()
+
+    if entry["is_inserted"]:
+        return True, entry
+    return False, entry
 
 def insert_log_into_database(db, result):
     """
@@ -104,10 +112,18 @@ def insert_log_into_database(db, result):
     Returns:
         None
     """
-    collection = db['LastSpin']
-    entry = collection.find_one()
+    is_inserted, entry = is_last_spin_inserted(db)
+    if not is_inserted:
+        new_values = { "$set": {
+            "is_inserted": True
+            }
+        }
+        id_filter = {'_id': entry['_id']}
+        db['LastSpin'].update_one(id_filter, new_values)
+    else:
+        return
+    
     collection = db['Logs']
-
     post = {
         "game_date": entry['last_game_date'],
         "game": entry['last_game'],
