@@ -33,6 +33,7 @@ jobs:
         touch variables.env
         ls .
         python setup.py build
+        python setup.py bdist_rpm
 
     - name: Validate directory contents
       run: ls .
