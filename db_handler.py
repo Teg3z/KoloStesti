@@ -90,11 +90,13 @@ def update_last_spin(db, game, players):
 
     collection.update_one(id_filter, new_values)
 
-def check_last_spin_insertion(entry):
-    is_inserted = False
+def is_last_spin_inserted(db):
+    collection = db['LastSpin']
+    entry = collection.find_one()
+
     if entry["is_inserted"]:
-        is_inserted = True
-    return is_inserted
+        return True, entry
+    return False, entry
 
 def insert_log_into_database(db, result):
     """
@@ -110,15 +112,14 @@ def insert_log_into_database(db, result):
     Returns:
         None
     """
-    collection = db['LastSpin']
-    entry = collection.find_one()
-    id_filter = {'_id': entry['_id']}
-    if not check_last_spin_insertion(entry):
+    is_inserted, entry = is_last_spin_inserted(db)
+    if not is_inserted:
         new_values = { "$set": {
             "is_inserted": True
             }
         }
-        collection.update_one(id_filter, new_values)
+        id_filter = {'_id': entry['_id']}
+        db['LastSpin'].update_one(id_filter, new_values)
     else:
         return
     
