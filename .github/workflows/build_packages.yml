@@ -25,14 +25,16 @@ jobs:
         python -m pip install --upgrade pip
         pip install cx_Freeze 
         pip install -r requirements.txt
-        python setup.py bdist_msi
-        python setup.py bdist_mac
-        python setup.py bdist_deb
-        python setup.py bdist_rpm
+        python setup.py build
+#        python setup.py bdist_msi
+#       python setup.py bdist_mac
+#        python setup.py bdist_deb
+#       python setup.py bdist_rpm
         ls ./dist
+        ls ./build
 
     - name: Validate dist folder
-      run: ls ./dist
+      run: ls ./dist && ls ./build
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
