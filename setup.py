@@ -3,7 +3,7 @@ import sys
 
 # Dependencies are automatically detected, but it might need
 # fine tuning.
-build_options = {'includes': [],
+build_options = {'packages': ['dns','dns.resolver','dns.rdatatype'],
                  'excludes': [],
                  'include_files': [('variables.env', 'variables.env')]
                  }
