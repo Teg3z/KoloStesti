@@ -5,10 +5,8 @@ on:
     types: [published]
   workflow_dispatch:
 
-
-
 jobs:
-  build:
+  build-appimage:
     runs-on: ubuntu-latest
 
     steps:
@@ -41,10 +39,11 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         path: dist/*
+        name: WoL.app
         overwrite: true
 
-  release:
-    needs: build
+  release-appimage:
+    needs: build-appimage
     runs-on: ubuntu-latest
 
     steps:
@@ -53,27 +52,44 @@ jobs:
       with:
         path: ./artifacts
 
-
-    - name: Upload MSI to Release
-      uses: softprops/action-gh-release@v2
-      with:
-        files: artifacts/*.msi
-
-
     - name: Upload APP to Release
       uses: softprops/action-gh-release@v2
       with:
         files: artifacts/*.app
 
+  build-msi:
+    runs-on: windows-latest
 
-    - name: Upload DEB to Release
-      uses: softprops/action-gh-release@v2
-      with:
-        files: artifacts/*.deb
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: './requirements.txt'
 
-    - name: Upload RPM to Release
-      uses: softprops/action-gh-release@v2
-      with:
-        files: artifacts/*.rpm
+      - name: Build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install cx_Freeze 
+          pip install -r requirements.txt
+
+      - name: Build packages
+        run: |
+          touch variables.env
+          ls .
+          python setup.py bdist_msi
+
+      - name: Validate directory contents
+        run: ls .
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: dist/*
+          name: WoL.msi
+          overwrite: true
 
