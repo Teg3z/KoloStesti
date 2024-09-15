@@ -141,7 +141,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: dist/*.app
+          path: ./build/dist/*.app
           name: WoL.app
           overwrite: true
 
