@@ -95,7 +95,7 @@ jobs:
           overwrite: true
 
   release-msi:
-    needs: build-appimage
+    needs: build-msi
     runs-on: ubuntu-latest
 
     steps:
@@ -146,7 +146,7 @@ jobs:
           overwrite: true
 
   release-dmg:
-    needs: build-appimage
+    needs: build-dmg
     runs-on: ubuntu-latest
 
     steps:
