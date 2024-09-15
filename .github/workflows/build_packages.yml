@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-appimage:
+  build-linux-packages:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,19 +31,35 @@ jobs:
         touch variables.env
         ls .
         python setup.py bdist_appimage
+        python setup.py bdist_rpm
+        python setup.py bdist_deb
 
     - name: Validate directory contents
       run: ls .
 
-    - name: Upload artifacts
+    - name: Upload AppImage
       uses: actions/upload-artifact@v4
       with:
-        path: dist/*
-        name: WoL.app
+        path: dist/*.AppImage
+        name: WoL.AppImage
         overwrite: true
 
-  release-appimage:
-    needs: build-appimage
+    - name: Upload rpm
+      uses: actions/upload-artifact@v4
+      with:
+        path: dist/*.rpm
+        name: WoL.rpm
+        overwrite: true
+
+    - name: Upload deb
+      uses: actions/upload-artifact@v4
+      with:
+        path: dist/*.deb
+        name: WoL.deb
+        overwrite: true
+
+  release-linux-packages:
+    needs: build-linux-packages
     runs-on: ubuntu-latest
 
     steps:
@@ -52,10 +68,20 @@ jobs:
       with:
         path: ./artifacts
 
+    - name: Upload rpm to Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: artifacts/*.rpm
+
     - name: Upload APP to Release
       uses: softprops/action-gh-release@v2
       with:
-        files: artifacts/*.app
+        files: artifacts/*.AppImage
+
+    - name: Upload deb to Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: artifacts/*.deb
 
   build-msi:
     runs-on: windows-latest
@@ -93,3 +119,38 @@ jobs:
           name: WoL.msi
           overwrite: true
 
+  build-dmg:
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: './requirements.txt'
+
+      - name: Build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install cx_Freeze 
+          pip install -r requirements.txt
+
+      - name: Build packages
+        run: |
+          touch variables.env
+          ls .
+          python setup.py bdist_dmg
+
+      - name: Validate directory contents
+        run: ls .
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: dist/*
+          name: WoL.dmg
+          overwrite: true
