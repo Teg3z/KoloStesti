@@ -45,7 +45,6 @@ client = discord.Client(intents=intents)
 
 # Setup database connection
 db = db_handler.connect_to_db()
-games = db_handler.get_list_of_games(db)
 
 @client.event
 async def on_ready():
@@ -78,29 +77,58 @@ async def on_message(message):
     if message.content.startswith("!"):
         if message.content == "!games":
             # Ensure no extra spaces or newlines are present in each game name
-            await message.channel.send(f"List her v kole štěstí: \n\n{make_list_printable(games)}")
+            await message.channel.send(
+                "List her v kole štěstí: \n\n" +
+                f"{make_list_printable(db_handler.get_list_of_games(db))}"
+            )
+        elif message.content.startswith("!games add "):
+            # Extract the game name
+            game = get_game_name_from_command(message, "!games add ")
+
+            added = db_handler.add_game_to_game_list(db, game)
+            if added:
+                await message.channel.send(
+                    f"Hra '{game}' byla úspěšně přidána do seznamu her."
+                )
+            else:
+                await message.channel.send(
+                    f"Hra '{game}' již je na seznamu her. (!games)"
+                )
+        elif message.content.startswith("!games remove "):
+            # Extract the game name
+            game = get_game_name_from_command(message, "!games remove ")
+
+            removed = db_handler.remove_game_from_game_list(db, game)
+            if removed:
+                await message.channel.send(
+                    f"Hra '{game}' byla úspěšně odebrána ze seznamu her."
+                )
+            else:
+                await message.channel.send(
+                    f"Hra '{game}' nebyla na seznamu her nalezena. (!games)"
+                )
         elif message.content == "!mygames":
             # Get the games list of the author of the message
             users_games = db_handler.get_list_of_user_games(db, message.author.name)
             await message.channel.send(f"Tvůj list her: \n\n{make_list_printable(users_games)}")
         elif message.content.startswith("!mygames add "):
             # Extract the game name
-            game_to_add = message.content[len("!mygames add "):].strip()
+            game = get_game_name_from_command(message, "!mygames add ")
 
-            if game_to_add in games:
-                db_handler.add_game_to_user_game_list(db, message.author.name, game_to_add)
+            if game in db_handler.get_list_of_games(db):
+                db_handler.add_game_to_user_game_list(db, message.author.name, game)
                 await message.channel.send(
-                    f"Hra '{game_to_add}' byla úspěšně přidána do tvého seznamu her."
+                    f"Hra '{game}' byla úspěšně přidána do tvého seznamu her."
                 )
             else:
                 await message.channel.send(
-                    f"Hra '{game_to_add}' nebyla nalezena na seznamu her. (!games)"
+                    f"Hra '{game}' nebyla nalezena na seznamu her. (!games)"
                 )
         elif message.content.startswith("!mygames remove "):
             # Extract the game name
-            game_to_remove = message.content[len("!mygames remove "):].strip()
+            game_to_remove = get_game_name_from_command(message, "!mygames remove ")
 
-            if game_to_remove in games:
+            if game_to_remove in db_handler.get_list_of_games(db):
                 db_handler.remove_game_from_user_game_list(db,message.author.name,game_to_remove)
                 await message.channel.send(
                     f"Hra '{game_to_remove}' byla úspěšně odebrána z tvého seznamu her."
@@ -110,7 +138,19 @@ async def on_message(message):
                     f"Hra '{game_to_remove}' nebyla nalezena na seznamu her. (!games)"
                 )
 
-    # You can add more conditions here for other commands if needed
+def get_game_name_from_command(command, command_to_remove_from_message):
+    """
+    Removes all of the string which doesn't represent a game name.
+
+    Parameters:
+        command (string): A message command posted by the user in Discord.
+        command_to_remove_from_message (string):
+            Part of the command that is to be removed in order to get the game name.
+
+    Returns:
+        string: Game name.
+    """
+    return command.content[len(command_to_remove_from_message):].strip()
 
 def make_list_printable(items_list):
     """

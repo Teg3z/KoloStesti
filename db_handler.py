@@ -133,7 +133,7 @@ def insert_log_into_database(db, result):
         db['LastSpin'].update_one(id_filter, new_values)
     else:
         return
-    
+
     collection = db['Logs']
     post = {
         "game_date": entry['last_game_date'],
@@ -184,6 +184,50 @@ def get_list_of_user_games(db, user_name):
     # Sort the games alphabetically
     user_games.sort()
     return user_games
+
+def add_game_to_game_list(db, game):
+    """
+    Adds a game name to the list of games in the database.
+
+    Parameters:
+        db (pymongo.mongo_client.MongoClient):
+            An instance of a MongoClient connected to the specified database.
+        game (string): A name of the game.
+
+    Returns:
+        Bool: Indication whether the game was removed or not.
+    """
+    collection = db["Games"]
+
+    # Check whether there already is a game with that name
+    count = collection.count_documents({"name": game})
+    if count != 0:
+        return False
+
+    collection.insert_one({"name": game})
+    return True
+
+def remove_game_from_game_list(db, game):
+    """
+    Removes a game name from a list of games in the database.
+
+    Parameters:
+        db (pymongo.mongo_client.MongoClient):
+            An instance of a MongoClient connected to the specified database.
+        game (string): A name of the game.
+
+    Returns:
+        Bool: Indication whether the game was removed or not.
+    """
+    collection = db["Games"]
+
+    # Check whether there already is a game with that name
+    count = collection.count_documents({"name": game})
+    if count == 0:
+        return False
+
+    collection.delete_one({"name": game})
+    return True
 
 def add_game_to_user_game_list(db, user_name, game):
     """
