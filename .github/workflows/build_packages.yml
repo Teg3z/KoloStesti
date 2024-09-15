@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-linux-packages:
+  build-appimage:
     runs-on: ubuntu-latest
 
     steps:
@@ -94,6 +94,21 @@ jobs:
           name: WoL.msi
           overwrite: true
 
+  release-msi:
+    needs: build-appimage
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: ./artifacts
+
+    - name: Upload APP to Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: artifacts/*.msi
+
   build-dmg:
     runs-on: macos-latest
 
@@ -129,3 +144,18 @@ jobs:
           path: dist/*.dmg
           name: WoL.dmg
           overwrite: true
+
+  release-dmg:
+    needs: build-appimage
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: ./artifacts
+
+    - name: Upload APP to Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: artifacts/*.dmg
