@@ -135,7 +135,7 @@ jobs:
           python setup.py bdist_dmg
 
       - name: Validate directory contents
-        run: ls .
+        run: ls . && ls ./build/dist
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
