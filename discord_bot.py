@@ -78,7 +78,8 @@ async def on_message(message):
         if message.content == "!games":
             # Ensure no extra spaces or newlines are present in each game name
             await message.channel.send(
-                f"List her v kole štěstí: \n\n{make_list_printable(db_handler.get_list_of_games(db))}"
+                "List her v kole štěstí: \n\n" +
+                f"{make_list_printable(db_handler.get_list_of_games(db))}"
             )
         elif message.content.startswith("!games add "):
             # Extract the game name

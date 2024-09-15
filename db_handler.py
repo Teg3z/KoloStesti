@@ -133,7 +133,7 @@ def insert_log_into_database(db, result):
         db['LastSpin'].update_one(id_filter, new_values)
     else:
         return
-    
+
     collection = db['Logs']
     post = {
         "game_date": entry['last_game_date'],
@@ -198,7 +198,7 @@ def add_game_to_game_list(db, game):
         Bool: Indication whether the game was removed or not.
     """
     collection = db["Games"]
-    
+
     # Check whether there already is a game with that name
     count = collection.count_documents({"name": game})
     if count != 0:
@@ -220,7 +220,7 @@ def remove_game_from_game_list(db, game):
         Bool: Indication whether the game was removed or not.
     """
     collection = db["Games"]
-    
+
     # Check whether there already is a game with that name
     count = collection.count_documents({"name": game})
     if count == 0:
