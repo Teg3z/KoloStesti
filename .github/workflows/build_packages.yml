@@ -31,7 +31,6 @@ jobs:
         touch variables.env
         ls .
         python setup.py bdist_appimage
-        python setup.py bdist_deb
 
     - name: Validate directory contents
       run: ls .
