@@ -26,8 +26,8 @@ jobs:
         pip install cx_Freeze 
         pip install -r requirements.txt
         rpm --version
-        apt-get install alien
-        apt-get install fakeroot
+        sudo apt-get install alien
+        sudo apt-get install fakeroot
         
 
     - name: Build packages
