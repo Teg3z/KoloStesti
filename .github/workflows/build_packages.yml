@@ -25,10 +25,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install cx_Freeze 
         pip install -r requirements.txt
-        rpm --version
-        sudo apt-get install alien
-        sudo apt-get install fakeroot
-        
 
     - name: Build packages
       run: |
@@ -47,15 +43,8 @@ jobs:
         name: WoL.AppImage
         overwrite: true
 
-    - name: Upload deb
-      uses: actions/upload-artifact@v4
-      with:
-        path: dist/*.deb
-        name: WoL.deb
-        overwrite: true
-
-  release-linux-packages:
-    needs: build-linux-packages
+  release-appimage:
+    needs: build-appimage
     runs-on: ubuntu-latest
 
     steps:
@@ -68,11 +57,6 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: artifacts/*.AppImage
-
-    - name: Upload deb to Release
-      uses: softprops/action-gh-release@v2
-      with:
-        files: artifacts/*.deb
 
   build-msi:
     runs-on: windows-latest
@@ -142,6 +126,6 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: dist/*
+          path: dist/*.dmg
           name: WoL.dmg
           overwrite: true
