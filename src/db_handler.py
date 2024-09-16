@@ -165,48 +165,6 @@ def get_list_of_games(db):
     games.sort()
     return games
 
-def add_new_player(db, user_name):
-    """
-    Add a new player into the Players collection.
-
-    Parameters:
-        db (pymongo.mongo_client.MongoClient):
-            An instance of a MongoClient connected to the specified database.
-        user_name (string): Users Dicord name (not server nick).
-
-    Returns:
-        Dictionary: Represents a new player document inserted in the DB.
-    """
-    collection = db["Players"]
-    new_document = {
-        "name": user_name,
-        "games": []
-        }
-    collection.insert_one(new_document)
-    return new_document
-
-def get_list_of_user_games(db, user_name):
-    """
-    Retrieves a list of all games from the MongoDB database in alphabetically sorted order.
-    for the specified user.
-
-    Parameters:
-        db (pymongo.mongo_client.MongoClient):
-            An instance of a MongoClient connected to the specified database.
-        user_name (string): Users Dicord name (not server nick).
-
-    Returns:
-        List: A list of strings containing all users game names (alphabetically sorted).
-    """
-    collection = db["Players"]
-    user = collection.find_one({"name": user_name})
-    if user is None:
-        user = add_new_player(db, user_name)
-    user_games = user["games"]
-    # Sort the games alphabetically
-    user_games.sort()
-    return user_games
-
 def add_game_to_game_list(db, game):
     """
     Adds a game name to the list of games in the database.
@@ -250,6 +208,48 @@ def remove_game_from_game_list(db, game):
 
     collection.delete_one({"name": game})
     return True
+
+def add_new_player(db, user_name):
+    """
+    Add a new player into the Players collection.
+
+    Parameters:
+        db (pymongo.mongo_client.MongoClient):
+            An instance of a MongoClient connected to the specified database.
+        user_name (string): Users Dicord name (not server nick).
+
+    Returns:
+        Dictionary: Represents a new player document inserted in the DB.
+    """
+    collection = db["Players"]
+    new_document = {
+        "name": user_name,
+        "games": []
+        }
+    collection.insert_one(new_document)
+    return new_document
+
+def get_list_of_user_games(db, user_name):
+    """
+    Retrieves a list of all games from the MongoDB database in alphabetically sorted order.
+    for the specified user.
+
+    Parameters:
+        db (pymongo.mongo_client.MongoClient):
+            An instance of a MongoClient connected to the specified database.
+        user_name (string): Users Dicord name (not server nick).
+
+    Returns:
+        List: A list of strings containing all users game names (alphabetically sorted).
+    """
+    collection = db["Players"]
+    user = collection.find_one({"name": user_name})
+    if user is None:
+        user = add_new_player(db, user_name)
+    user_games = user["games"]
+    # Sort the games alphabetically
+    user_games.sort()
+    return user_games
 
 def add_game_to_user_game_list(db, user_name, game):
     """
