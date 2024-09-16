@@ -166,6 +166,17 @@ def get_list_of_games(db):
     return games
 
 def add_new_player(db, user_name):
+    """
+    Add a new player into the Players collection.
+
+    Parameters:
+        db (pymongo.mongo_client.MongoClient):
+            An instance of a MongoClient connected to the specified database.
+        user_name (string): Users Dicord name (not server nick).
+
+    Returns:
+        Dictionary: Represents a new player document inserted in the DB.
+    """
     collection = db["Players"]
     new_document = {
         "name": user_name,
