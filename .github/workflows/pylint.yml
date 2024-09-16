@@ -36,7 +36,7 @@ jobs:
       run: |
         score=$(grep -oP 'rated at \K[0-9]+\.[0-9]+' lint.txt)
         echo "Pylint score is $score"
-        echo "name=score::$score" >> $GITHUB_OUTPUT
+        echo "name=score" >> $GITHUB_OUTPUT
 
     - name: Check pylint score
       run: |
