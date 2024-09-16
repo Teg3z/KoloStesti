@@ -14,10 +14,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
         check-latest: true
+        cache: 'pip'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -35,7 +36,7 @@ jobs:
       run: |
         score=$(grep -oP 'rated at \K[0-9]+\.[0-9]+' lint.txt)
         echo "Pylint score is $score"
-        echo "::set-output name=score::$score"
+        echo "score=$score" >> $GITHUB_OUTPUT
 
     - name: Check pylint score
       run: |
@@ -47,7 +48,7 @@ jobs:
         fi
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: lint.txt
         path: lint.txt

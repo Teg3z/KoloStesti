@@ -91,6 +91,17 @@ def update_last_spin(db, game, players):
     collection.update_one(id_filter, new_values)
 
 def is_last_spin_inserted(db):
+    """
+    Checks whether the last spin in the DB was already inserted or not.
+
+    Parameters:
+        db (pymongo.mongo_client.MongoClient):
+            An instance of a MongoClient connected to the specified database.
+    Returns:
+        tuple: A tuple containing:
+            - bool: A boolean indicating whether the last spin was already inserted into the logs.
+            - entry (dictionary): The last spin document.
+    """
     collection = db['LastSpin']
     entry = collection.find_one()
 
@@ -101,8 +112,8 @@ def is_last_spin_inserted(db):
 def insert_log_into_database(db, result):
     """
     Gets all information from the last spin in the database and inserts
-    a new document with the `result` parameter into the correspoding collection
-    by the category of the last spin. Doesn't yet support "REACTION PLAY"
+    a new document with the `result` parameter. Only inserts when the last spin
+    wasn't already inserted before.
 
     Parameters:
         db (pymongo.mongo_client.MongoClient):
@@ -122,7 +133,7 @@ def insert_log_into_database(db, result):
         db['LastSpin'].update_one(id_filter, new_values)
     else:
         return
-    
+
     collection = db['Logs']
     post = {
         "game_date": entry['last_game_date'],
@@ -154,6 +165,70 @@ def get_list_of_games(db):
     games.sort()
     return games
 
+def add_game_to_game_list(db, game):
+    """
+    Adds a game name to the list of games in the database.
+
+    Parameters:
+        db (pymongo.mongo_client.MongoClient):
+            An instance of a MongoClient connected to the specified database.
+        game (string): A name of the game.
+
+    Returns:
+        Bool: Indication whether the game was removed or not.
+    """
+    collection = db["Games"]
+
+    # Check whether there already is a game with that name
+    count = collection.count_documents({"name": game})
+    if count != 0:
+        return False
+
+    collection.insert_one({"name": game})
+    return True
+
+def remove_game_from_game_list(db, game):
+    """
+    Removes a game name from a list of games in the database.
+
+    Parameters:
+        db (pymongo.mongo_client.MongoClient):
+            An instance of a MongoClient connected to the specified database.
+        game (string): A name of the game.
+
+    Returns:
+        Bool: Indication whether the game was removed or not.
+    """
+    collection = db["Games"]
+
+    # Check whether there already is a game with that name
+    count = collection.count_documents({"name": game})
+    if count == 0:
+        return False
+
+    collection.delete_one({"name": game})
+    return True
+
+def add_new_player(db, user_name):
+    """
+    Add a new player into the Players collection.
+
+    Parameters:
+        db (pymongo.mongo_client.MongoClient):
+            An instance of a MongoClient connected to the specified database.
+        user_name (string): Users Dicord name (not server nick).
+
+    Returns:
+        Dictionary: Represents a new player document inserted in the DB.
+    """
+    collection = db["Players"]
+    new_document = {
+        "name": user_name,
+        "games": []
+        }
+    collection.insert_one(new_document)
+    return new_document
+
 def get_list_of_user_games(db, user_name):
     """
     Retrieves a list of all games from the MongoDB database in alphabetically sorted order.
@@ -169,6 +244,8 @@ def get_list_of_user_games(db, user_name):
     """
     collection = db["Players"]
     user = collection.find_one({"name": user_name})
+    if user is None:
+        user = add_new_player(db, user_name)
     user_games = user["games"]
     # Sort the games alphabetically
     user_games.sort()
@@ -188,6 +265,9 @@ def add_game_to_user_game_list(db, user_name, game):
         None
     """
     collection = db["Players"]
+    user = collection.find_one({"name": user_name})
+    if user is None:
+        add_new_player(db, user_name)
     collection.update_one(
         {"name": user_name},
         {"$addToSet": {"games": game}}
@@ -207,6 +287,9 @@ def remove_game_from_user_game_list(db, user_name, game):
         None
     """
     collection = db["Players"]
+    user = collection.find_one({"name": user_name})
+    if user is None:
+        add_new_player(db, user_name)
     collection.update_one(
         {"name": user_name},
         {"$pull": {"games": game}}

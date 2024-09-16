@@ -239,6 +239,21 @@ def logout_discord_bot():
     asyncio.run_coroutine_threadsafe(discord_bot.logout(), discord_bot.client.loop)
 
 def change_last_spin_insertion_visibility(window, db, visible):
+    """
+    Handles visibility of the corresponding UI elements taking care of last spin
+    insertion into the DB. 
+
+    Parameters:
+        window (PySimpleGUI.Window):
+            The main UI window of the application.
+        db (pymongo.mongo_client.MongoClient):
+            An instance of a MongoClient connected to the specified database.
+        visible (bool):
+            Indicates whether the UI elements should be hidden/shown .
+
+    Returns:
+        None
+    """
     window["W"].Update(visible=visible)
     window["L"].Update(visible=visible)
     window["LAST_GAME"].Update(visible=visible)
