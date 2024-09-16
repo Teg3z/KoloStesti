@@ -110,7 +110,12 @@ async def on_message(message):
         elif message.content == "!mygames":
             # Get the games list of the author of the message
             users_games = db_handler.get_list_of_user_games(db, message.author.name)
-            await message.channel.send(f"Tvůj list her: \n\n{make_list_printable(users_games)}")
+            if len(users_games) == 0:
+                await message.channel.send(
+                    "Tvůj list her je prázdný, přidej hry pomocí \"!mygames add NázevHry\""
+                )
+            else:
+                await message.channel.send(f"Tvůj list her: \n\n{make_list_printable(users_games)}")
         elif message.content.startswith("!mygames add "):
             # Extract the game name
             game = get_game_name_from_command(message, "!mygames add ")
@@ -128,14 +133,14 @@ async def on_message(message):
             # Extract the game name
             game_to_remove = get_game_name_from_command(message, "!mygames remove ")
 
-            if game_to_remove in db_handler.get_list_of_games(db):
-                db_handler.remove_game_from_user_game_list(db,message.author.name,game_to_remove)
+            if game_to_remove in db_handler.get_list_of_user_games(db, message.author.name):
+                db_handler.remove_game_from_user_game_list(db, message.author.name, game_to_remove)
                 await message.channel.send(
                     f"Hra '{game_to_remove}' byla úspěšně odebrána z tvého seznamu her."
                 )
             else:
                 await message.channel.send(
-                    f"Hra '{game_to_remove}' nebyla nalezena na seznamu her. (!games)"
+                    f"Hra '{game_to_remove}' nebyla nalezena na tvém seznamu her. (!mygames)"
                 )
 
 def get_game_name_from_command(command, command_to_remove_from_message):

@@ -165,6 +165,15 @@ def get_list_of_games(db):
     games.sort()
     return games
 
+def add_new_player(db, user_name):
+    collection = db["Players"]
+    new_document = {
+        "name": user_name,
+        "games": []
+        }
+    collection.insert_one(new_document)
+    return new_document
+
 def get_list_of_user_games(db, user_name):
     """
     Retrieves a list of all games from the MongoDB database in alphabetically sorted order.
@@ -180,6 +189,8 @@ def get_list_of_user_games(db, user_name):
     """
     collection = db["Players"]
     user = collection.find_one({"name": user_name})
+    if user is None:
+        user = add_new_player(db, user_name)
     user_games = user["games"]
     # Sort the games alphabetically
     user_games.sort()
@@ -243,6 +254,9 @@ def add_game_to_user_game_list(db, user_name, game):
         None
     """
     collection = db["Players"]
+    user = collection.find_one({"name": user_name})
+    if user is None:
+        add_new_player(db, user_name)
     collection.update_one(
         {"name": user_name},
         {"$addToSet": {"games": game}}
@@ -262,6 +276,9 @@ def remove_game_from_user_game_list(db, user_name, game):
         None
     """
     collection = db["Players"]
+    user = collection.find_one({"name": user_name})
+    if user is None:
+        add_new_player(db, user_name)
     collection.update_one(
         {"name": user_name},
         {"$pull": {"games": game}}
