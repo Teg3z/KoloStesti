@@ -20,9 +20,12 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from env_var_loader import get_env_var_value
 
-def connect_to_db():
+def connect_to_db(db_name='WheelOfLuck'):
     """
     Establishes a connection to the MongoDB database.
+
+    Parameters:
+        db_name (string): A name of the database to connect to.
 
     Returns:
         pymongo.mongo_client.MongoClient:
@@ -32,7 +35,7 @@ def connect_to_db():
     # Create a new client and connect to the server
     client = MongoClient(db_connection_string, server_api=ServerApi('1'))
     # Connect to database namespace
-    return client['WheelOfLuck']
+    return client[db_name]
 
 def get_last_spin_string(db):
     """
@@ -121,7 +124,7 @@ def insert_log_into_database(db, result):
         result (string): The result of the played game. Either "W" or "L" (Win/Lose).
 
     Returns:
-        None
+        Dictionary: Contains the '_id' property of the inserted log.
     """
     is_inserted, entry = is_last_spin_inserted(db)
     if not is_inserted:
@@ -132,7 +135,7 @@ def insert_log_into_database(db, result):
         id_filter = {'_id': entry['_id']}
         db['LastSpin'].update_one(id_filter, new_values)
     else:
-        return
+        return id_filter
 
     collection = db['Logs']
     post = {
