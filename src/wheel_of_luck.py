@@ -293,7 +293,7 @@ async def main():
     last_game_result = db_handler.get_last_spin_string(db)
     is_last_spin_inserted, _ = db_handler.is_last_spin_inserted(db)
     last_game_result_ui = PySimpleGUI.Text(
-        f"\nJak dopadla minulá hra? \n({last_game_result})",
+        f"\nLast game result? \n({last_game_result})",
         text_color=fg_color,
         background_color=bg_color,
         font=font,
@@ -398,7 +398,7 @@ async def main():
             continue
         if event == "SEND REACTION":
             rolled_game = None
-            message_id = send_message_to_discord("Jde se točit kolem štěští! Kdo se zapojí?")
+            message_id = send_message_to_discord("Let's spin the wheel of luck! Who's in?")
             continue
         if event == "PLAY REACTION":
             # Check that there is a message already sent in the DC chat
@@ -409,7 +409,7 @@ async def main():
 
             # No reaction case
             if not players:
-                send_message_to_discord("Nikdo nechce točit :(")
+                send_message_to_discord("Nobody wants to participate :(")
                 continue
 
             # Get list of games that those players have in common
@@ -451,7 +451,7 @@ async def main():
             if rolled_game is not None:
                 # Call Discord Bot to announce the game that has been rolled
                 send_message_to_discord(
-                    "Jdeme hrát " + rolled_game.Get() + ", chce se někdo přidat?"
+                    "Going to play " + rolled_game.Get() + ", anyone wanna join in?"
                 )
             continue
         # Window closing event
