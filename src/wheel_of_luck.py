@@ -34,7 +34,6 @@ import threading
 import PySimpleGUI
 import discord_bot
 import db_handler
-from game import Game
 
 def remove_unwated_games(game_ui_texts, games, window, common_games):
     """
@@ -101,16 +100,13 @@ def choose_winning_game(games):
     desire percentage.
     
     Parameters:
-        games (list[game.Game]): A list of games represented by Game objects.
+        games (list[str]): A list of game names.
 
     Returns:
         game.Game: A randomly chosen Game object.
     """
-    percentages = []
-    for _game in games:
-        percentages.append(_game.percentage)
 
-    winning_games = random.choices(list(games),weights=percentages, k=1)
+    winning_games = random.choices(list(games), k=1)
     return winning_games[0]
 
 async def spin_wheel(games_ui_texts, games, main_window, result_ui):
@@ -132,7 +128,7 @@ async def spin_wheel(games_ui_texts, games, main_window, result_ui):
     # Start with all games whitened.
     whiten_game_ui_text(games_ui_texts)
     # Choose the name of the winning game
-    rolled_game = choose_winning_game(games).name
+    rolled_game = choose_winning_game(games)
 
     # Find the UI text corresponding to the `rolled_game`
     rolled_game_ui_text = games_ui_texts[0]
@@ -280,24 +276,7 @@ async def main():
     bot_thread = start_discord_bot()
 
     # All the playable games
-    games = [
-        Game("Apex Legends", ["DK", "D", "K", "DKKA", "DKA"], 1),
-        Game("PUBG: Battlegrounds", ["DK", "K", "D", "DKKA", "DKA",], 1),
-        Game("Counter Strike: Global Offensive", ["DK", "D", "DKKA", "DKA",], 1),
-        Game("Fortnite", ["DK", "D"], 1),
-        Game("Programovani kola stesti", ["DK", "D", "DKKA", "DKA"], 1),
-        Game("Lost Ark", ["DK", "D", "K", "DFK"], 1),
-        #Game("Payday 2", ["DFK", "DK", "FK", "F", "K"], 1),
-        Game("League of Legends", ["DM", "D", "M", "DF", "DFKM"], 1),
-        Game("Fall Guys", ["DFK", "DK", "DF", "FK", "D", "K", "F"], 1),
-        Game("Overwatch", ["DFK", "DK", "DF", "FK", "D", "K", "F", "DKKA", "DKA"], 1),
-        Game("Grant Treft Auto V", ["DFK", "F", "DK", "DF"], 1),
-        Game("Keep Talking and Nobody Explodes", ["DK", "DF", "TEST"], 1),
-        Game("Orcs Must Die", ["DK", "K"], 1),
-        Game("Deceive", ["DFK", "DK", "DF"], 1),
-        Game("Dead by Daylight", ["DK", "DKKA", "DKA"], 1),
-        Game("Dying Light", ["DKKA", "DKA"], 1)
-    ]
+    games = db_handler.get_list_of_games(db)
 
     # Colors
     bg_color = "Black"
@@ -322,17 +301,17 @@ async def main():
         visible= not is_last_spin_inserted
     )
 
-    winlose = PySimpleGUI.Text("", text_color=fg_color, background_color=bg_color, font=font)
+    win_lose_msg = PySimpleGUI.Text("", text_color=fg_color, background_color=bg_color, font=font)
 
     games_ui_texts = []
 
     for _game in games:
         games_ui_texts.append(PySimpleGUI.Text(
-            _game.name,
+            _game,
             text_color=fg_color,
             font=font,
             background_color=bg_color,
-            key=_game.name
+            key=_game
         ))
 
     # Buttons
@@ -387,7 +366,7 @@ async def main():
     layout.append([announce_button])
     layout.append([last_game_result_ui])
     layout.append([win, lose])
-    layout.append([winlose])
+    layout.append([win_lose_msg])
 
     # Applications main window setup
     main_window = PySimpleGUI.Window(
@@ -408,16 +387,17 @@ async def main():
 
         # Pressing W/L buttons condition
         if event == "W":
-            winlose.update("\n YOU ARE THE BEST" )
+            win_lose_msg.update("\nYOU ARE THE BEST")
             db_handler.insert_log_into_database(db, event)
             change_last_spin_insertion_visibility(main_window, db, False)
             continue
         if event == "L":
-            winlose.update("\n YOU SUCK" )
+            win_lose_msg.update("\nYOU SUCK")
             db_handler.insert_log_into_database(db, event)
             change_last_spin_insertion_visibility(main_window, db, False)
             continue
         if event == "SEND REACTION":
+            rolled_game = None
             message_id = send_message_to_discord("Jde se točit kolem štěští! Kdo se zapojí?")
             continue
         if event == "PLAY REACTION":
