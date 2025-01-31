@@ -78,7 +78,7 @@ async def on_message(message):
         if message.content == "!games":
             # Ensure no extra spaces or newlines are present in each game name
             await message.channel.send(
-                "List her v kole štěstí: \n\n" +
+                "Games list: \n\n" +
                 f"{make_list_printable(db_handler.get_list_of_games(db))}"
             )
         elif message.content.startswith("!games add "):
@@ -88,11 +88,11 @@ async def on_message(message):
             added = db_handler.add_game_to_game_list(db, game)
             if added:
                 await message.channel.send(
-                    f"Hra '{game}' byla úspěšně přidána do seznamu her."
+                    f"'{game}' was succesfully added into the game list."
                 )
             else:
                 await message.channel.send(
-                    f"Hra '{game}' již je na seznamu her. (!games)"
+                    f"'{game}' is already on the game list. (!games)"
                 )
         elif message.content.startswith("!games remove "):
             # Extract the game name
@@ -101,21 +101,21 @@ async def on_message(message):
             removed = db_handler.remove_game_from_game_list(db, game)
             if removed:
                 await message.channel.send(
-                    f"Hra '{game}' byla úspěšně odebrána ze seznamu her."
+                    f"'{game}' was succesfully removed from the game list."
                 )
             else:
                 await message.channel.send(
-                    f"Hra '{game}' nebyla na seznamu her nalezena. (!games)"
+                    f"'{game}' is not on the game list. (!games)"
                 )
         elif message.content == "!mygames":
             # Get the games list of the author of the message
             users_games = db_handler.get_list_of_user_games(db, message.author.name)
             if len(users_games) == 0:
                 await message.channel.send(
-                    "Tvůj list her je prázdný, přidej hry pomocí \"!mygames add NázevHry\""
+                    "Your game list is empty, add games via: \"!mygames add League of Legends\""
                 )
             else:
-                await message.channel.send(f"Tvůj list her: \n\n{make_list_printable(users_games)}")
+                await message.channel.send(f"Your game list: \n\n{make_list_printable(users_games)}")
         elif message.content.startswith("!mygames add "):
             # Extract the game name
             game = get_game_name_from_command(message, "!mygames add ")
@@ -123,11 +123,11 @@ async def on_message(message):
             if game in db_handler.get_list_of_games(db):
                 db_handler.add_game_to_user_game_list(db, message.author.name, game)
                 await message.channel.send(
-                    f"Hra '{game}' byla úspěšně přidána do tvého seznamu her."
+                    f"'{game}' was sucesfully added into your game list."
                 )
             else:
                 await message.channel.send(
-                    f"Hra '{game}' nebyla nalezena na seznamu her. (!games)"
+                    f"'{game}' wasn't found in the servers game list. (!games)"
                 )
         elif message.content.startswith("!mygames remove "):
             # Extract the game name
@@ -136,11 +136,11 @@ async def on_message(message):
             if game_to_remove in db_handler.get_list_of_user_games(db, message.author.name):
                 db_handler.remove_game_from_user_game_list(db, message.author.name, game_to_remove)
                 await message.channel.send(
-                    f"Hra '{game_to_remove}' byla úspěšně odebrána z tvého seznamu her."
+                    f"'{game_to_remove}' was succesfully removed from your game list."
                 )
             else:
                 await message.channel.send(
-                    f"Hra '{game_to_remove}' nebyla nalezena na tvém seznamu her. (!mygames)"
+                    f"'{game_to_remove}' wasn't found in your game list. (!mygames)"
                 )
 
 def get_game_name_from_command(command, command_to_remove_from_message):
