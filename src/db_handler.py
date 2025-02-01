@@ -18,6 +18,8 @@ Dependencies:
 from datetime import datetime
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+from pymongo.errors import ConnectionFailure
+
 from env_var_loader import get_env_var_value
 
 def connect_to_db(db_name='WheelOfLuck'):
@@ -32,10 +34,22 @@ def connect_to_db(db_name='WheelOfLuck'):
             A MongoClient instance connected to the specified database.
     """
     db_connection_string = get_env_var_value("DB_CONNECTION_STRING")
-    # Create a new client and connect to the server
-    client = MongoClient(db_connection_string, server_api=ServerApi('1'))
-    # Connect to database namespace
-    return client[db_name]
+
+    try:
+        # Create a new client and connect to the server
+        client = MongoClient(db_connection_string, server_api=ServerApi('1'))
+
+        # Verify the connection by pinging the server using the 'admin' command
+        client.admin.command('ping')
+        print("Successfully connected to MongoDB!")
+
+        # Create or access the database
+        db = client[db_name]
+        return db
+
+    except ConnectionFailure as e:
+        print(f"Could not connect to the database: {e}")
+        exit(1)
 
 def get_last_spin_string(db):
     """
