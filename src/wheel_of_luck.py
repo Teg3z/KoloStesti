@@ -32,8 +32,9 @@ import random
 import asyncio
 import threading
 import PySimpleGUI
+
 import discord_bot
-import db_handler
+from db_handler import DbHandler
 
 def remove_unwated_games(game_ui_texts, games, window, common_games):
     """
@@ -234,7 +235,7 @@ def logout_discord_bot():
     """
     asyncio.run_coroutine_threadsafe(discord_bot.logout(), discord_bot.client.loop)
 
-def change_last_spin_insertion_visibility(window, db, visible):
+def change_last_spin_insertion_visibility(window, db: DbHandler, visible):
     """
     Handles visibility of the corresponding UI elements taking care of last spin
     insertion into the DB. 
@@ -254,7 +255,7 @@ def change_last_spin_insertion_visibility(window, db, visible):
     window["L"].Update(visible=visible)
     window["LAST_GAME"].Update(visible=visible)
     if visible:
-        window["LAST_GAME"].Update(value=db_handler.get_last_spin_string(db))
+        window["LAST_GAME"].Update(value=db.get_last_spin_string())
 
     window.refresh()
 
@@ -270,13 +271,13 @@ async def main():
         None 
     """
     # Establish database connection
-    db = db_handler.connect_to_db()
+    db = DbHandler()
 
     # Start the Discord bot
     bot_thread = start_discord_bot()
 
     # All the playable games
-    games = db_handler.get_list_of_games(db)
+    games = db.get_list_of_games()
 
     # Colors
     bg_color = "Black"
@@ -290,8 +291,8 @@ async def main():
 
     # Texts
     result_ui = PySimpleGUI.Text("", text_color=fg_color, background_color=bg_color, font=font)
-    last_game_result = db_handler.get_last_spin_string(db)
-    is_last_spin_inserted, _ = db_handler.is_last_spin_inserted(db)
+    last_game_result = db.get_last_spin_string()
+    is_last_spin_inserted, _ = db.is_last_spin_inserted()
     last_game_result_ui = PySimpleGUI.Text(
         f"\nLast game result? \n({last_game_result})",
         text_color=fg_color,
@@ -388,12 +389,12 @@ async def main():
         # Pressing W/L buttons condition
         if event == "W":
             win_lose_msg.update("\nYOU ARE THE BEST")
-            db_handler.insert_log_into_database(db, event)
+            db.insert_log_into_database(event)
             change_last_spin_insertion_visibility(main_window, db, False)
             continue
         if event == "L":
             win_lose_msg.update("\nYOU SUCK")
-            db_handler.insert_log_into_database(db, event)
+            db.insert_log_into_database(event)
             change_last_spin_insertion_visibility(main_window, db, False)
             continue
         if event == "SEND REACTION":
@@ -417,11 +418,11 @@ async def main():
             for player in players:
                 # Inicialize the list of common games by the first player
                 if is_first_player:
-                    common_games = db_handler.get_list_of_user_games(db, player)
+                    common_games = db.get_list_of_user_games(player)
                     is_first_player = False
                     continue
                 # Get current players list of games
-                player_games = db_handler.get_list_of_user_games(db, player)
+                player_games = db.get_list_of_user_games(player)
                 # Keep only the games that are still in the common_games list
                 # and also in the current players list
                 updated_games_list = []
@@ -443,7 +444,7 @@ async def main():
                 main_window,
                 result_ui
             )
-            db_handler.update_last_spin(db, rolled_game.Get(), players=players)
+            db.update_last_spin(rolled_game.Get(), players=players)
             # Show insertion
             change_last_spin_insertion_visibility(main_window, db, True)
             continue

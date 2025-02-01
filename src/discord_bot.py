@@ -21,7 +21,8 @@ and by Discord events.
 import sys
 import asyncio
 import discord
-import db_handler
+
+from db_handler import DbHandler
 from env_var_loader import get_env_var_value
 
 # Getting environment variables
@@ -44,7 +45,7 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 # Setup database connection
-db = db_handler.connect_to_db()
+db = DbHandler()
 
 @client.event
 async def on_ready():
@@ -79,13 +80,13 @@ async def on_message(message):
             # Ensure no extra spaces or newlines are present in each game name
             await message.channel.send(
                 "Games list: \n\n" +
-                f"{make_list_printable(db_handler.get_list_of_games(db))}"
+                f"{make_list_printable(db.get_list_of_games())}"
             )
         elif message.content.startswith("!games add "):
             # Extract the game name
             game = get_game_name_from_command(message, "!games add ")
 
-            added = db_handler.add_game_to_game_list(db, game)
+            added = db.add_game_to_game_list(game)
             if added:
                 await message.channel.send(
                     f"'{game}' was succesfully added into the game list."
@@ -98,7 +99,7 @@ async def on_message(message):
             # Extract the game name
             game = get_game_name_from_command(message, "!games remove ")
 
-            removed = db_handler.remove_game_from_game_list(db, game)
+            removed = db.remove_game_from_game_list(game)
             if removed:
                 await message.channel.send(
                     f"'{game}' was succesfully removed from the game list."
@@ -109,7 +110,7 @@ async def on_message(message):
                 )
         elif message.content == "!mygames":
             # Get the games list of the author of the message
-            users_games = db_handler.get_list_of_user_games(db, message.author.name)
+            users_games = db.get_list_of_user_games(message.author.name)
             if len(users_games) == 0:
                 await message.channel.send(
                     "Your game list is empty, add games via: \"!mygames add League of Legends\""
@@ -120,8 +121,8 @@ async def on_message(message):
             # Extract the game name
             game = get_game_name_from_command(message, "!mygames add ")
 
-            if game in db_handler.get_list_of_games(db):
-                db_handler.add_game_to_user_game_list(db, message.author.name, game)
+            if game in db.get_list_of_games():
+                db.add_game_to_user_game_list(message.author.name, game)
                 await message.channel.send(
                     f"'{game}' was sucesfully added into your game list."
                 )
@@ -133,8 +134,8 @@ async def on_message(message):
             # Extract the game name
             game_to_remove = get_game_name_from_command(message, "!mygames remove ")
 
-            if game_to_remove in db_handler.get_list_of_user_games(db, message.author.name):
-                db_handler.remove_game_from_user_game_list(db, message.author.name, game_to_remove)
+            if game_to_remove in db.get_list_of_user_games(message.author.name):
+                db.remove_game_from_user_game_list(message.author.name, game_to_remove)
                 await message.channel.send(
                     f"'{game_to_remove}' was succesfully removed from your game list."
                 )

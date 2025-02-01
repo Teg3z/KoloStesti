@@ -1,316 +1,282 @@
 """
 db_handler.py
 
-This module contains database handling functions.
+A module containing the DbHandler class that handles all database operations.
 
 Main Functions:
-- connect_to_db: Establishes a connection to the MongoDB database.
-- get_list_of_games: Retrieves a list of all games from the database.
-- get_list_of_user_games: Retrieves a list of games associated with a specific user.
-- add_game_to_user_game_list: Adds a game to a user's list of games in the database.
-- remove_game_from_user_game_list: Removes a game from a user's list of games in the database.
+- get_last_spin_string: Returns the last spin in a formatted string.
+- update_last_spin: Updates the last spin in the database with the new game and players.
+- is_last_spin_inserted: Checks if the last spin has been inserted into the logs.
+- insert_log_into_database: Inserts the last spin into the logs collection.
+- get_list_of_games: Returns a list of all games in the database.
 
 Dependencies:
-- Requires pymongo for MongoDB interactions.
+- Requires pymongo to interact with the MongoDB database.
+- Requires ServerApi to specify the server API version.
 - Requires env_var_loader to load environment variables.
 """
 
 from datetime import datetime
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-from pymongo.errors import ConnectionFailure
 
 from env_var_loader import get_env_var_value
 
-def connect_to_db(db_name='WheelOfLuck'):
-    """
-    Establishes a connection to the MongoDB database.
+class DbHandler:
+    def __init__(self, db_name='WheelOfLuck') -> None:
+        """
+        Initializes the database connection and creates the necessary collections.
+        
+        Parameters:
+            db_name (str): The name of the database to connect to. Defaults to 'WheelOfLuck'.
 
-    Parameters:
-        db_name (string): A name of the database to connect to.
-
-    Returns:
-        pymongo.mongo_client.MongoClient:
-            A MongoClient instance connected to the specified database.
-    """
-    db_connection_string = get_env_var_value("DB_CONNECTION_STRING")
-
-    try:
-        # Create a new client and connect to the server
-        client = MongoClient(db_connection_string, server_api=ServerApi('1'))
+        Returns:
+            None
+        """
+        self.db_connection_string = get_env_var_value("DB_CONNECTION_STRING")
+        self.client = MongoClient(self.db_connection_string, server_api=ServerApi('1'))
 
         # Verify the connection by pinging the server using the 'admin' command
-        client.admin.command('ping')
+        self.client.admin.command('ping')
         print("Successfully connected to MongoDB!")
 
-        # Create or access the database
-        db = client[db_name]
-        return db
+        self.db = self.client[db_name]
+        self.last_spin_collection = self.db['LastSpin']
+        self.logs_collection = self.db['Logs']
+        self.games_collection = self.db['Games']
+        self.players_collection = self.db['Players']
 
-    except ConnectionFailure as e:
-        print(f"Could not connect to the database: {e}")
-        exit(1)
+    def get_last_spin_string(self) -> str:
+        """
+        Returns the last spin in a formatted string.
 
-def get_last_spin_string(db):
-    """
-    Retrieves the whole record of the last spin collection from MongoDB.
-    
-    Makes the record in a string form that is easily printable for the user,
-    so the user can understand it. 
+        Returns:
+            str: The formatted string of the last spin.
+        """
+        entry = self.last_spin_collection.find_one()
+        formatted_time = entry['last_game_date'].strftime("%d/%m/%Y %H:%M:%S")
 
-    Parameters:
-        db (pymongo.mongo_client.MongoClient):
-            An instance of a MongoClient connected to the specified database.
+        return str(entry['players']) + " - " + entry['last_game'] + \
+            " [" + formatted_time + "]"
 
-    Returns:
-        String: Contains every relevant attribute of the last spin record
-            (`last_category`, `last_game`, `last_game_date`) in an easily readable form.
-    """
-    collection = db['LastSpin']
-    entry = collection.find_one()
-    formatted_time = entry['last_game_date'].strftime("%d/%m/%Y %H:%M:%S")
+    def update_last_spin(self, game: str, players: list[str]) -> None:
+        """
+        Updates the last spin in the database with the new game and players.
+        
+        Parameters:
+            game (str): The name of the game that was played.
+            players (list[str]): The list of players that played the game.
 
-    return str(entry['players']) + " - " + entry['last_game'] + \
-        " [" + formatted_time + "]"
+        Returns:
+            None
+        """
+        # Create the time of the spin
+        time = datetime.now()
 
-def update_last_spin(db, game, players):
-    """
-    Updates the last spin in the MongoDB collection.
-
-    The function takes the current time as the time of the spin.
-
-    Parameters:
-        db (pymongo.mongo_client.MongoClient):
-            An instance of a MongoClient connected to the specified database.
-        game (string): The name of the game that was rolled during the spin.
-        players (List): The list of players who participated in the wheel spin.
-            (By reacting to the bots Discord message). 
-
-    Returns:
-        None
-    """
-    # Create the time of the spin
-    time = datetime.now()
-
-    # Select the correct collection from the DB and create the new data values to enter
-    collection = db['LastSpin']
-    new_values = { "$set": {
-        "last_game": game,
-        "last_game_date": time,
-        "players": players,
-        "is_inserted": False
-        }
-    }
-    # Get the single entry that will be updated
-    entry = collection.find_one()
-    id_filter = {'_id': entry['_id']}
-
-    collection.update_one(id_filter, new_values)
-
-def is_last_spin_inserted(db):
-    """
-    Checks whether the last spin in the DB was already inserted or not.
-
-    Parameters:
-        db (pymongo.mongo_client.MongoClient):
-            An instance of a MongoClient connected to the specified database.
-    Returns:
-        tuple: A tuple containing:
-            - bool: A boolean indicating whether the last spin was already inserted into the logs.
-            - entry (dictionary): The last spin document.
-    """
-    collection = db['LastSpin']
-    entry = collection.find_one()
-
-    if entry["is_inserted"]:
-        return True, entry
-    return False, entry
-
-def insert_log_into_database(db, result):
-    """
-    Gets all information from the last spin in the database and inserts
-    a new document with the `result` parameter. Only inserts when the last spin
-    wasn't already inserted before.
-
-    Parameters:
-        db (pymongo.mongo_client.MongoClient):
-            An instance of a MongoClient connected to the specified database.
-        result (string): The result of the played game. Either "W" or "L" (Win/Lose).
-
-    Returns:
-        Dictionary: Contains the '_id' property of the inserted log.
-    """
-    is_inserted, entry = is_last_spin_inserted(db)
-    if not is_inserted:
+        # Select the correct collection from the DB and create the new data values to enter
         new_values = { "$set": {
-            "is_inserted": True
+            "last_game": game,
+            "last_game_date": time,
+            "players": players,
+            "is_inserted": False
             }
         }
+        # Get the single entry that will be updated
+        entry = self.last_spin_collection.find_one()
         id_filter = {'_id': entry['_id']}
-        db['LastSpin'].update_one(id_filter, new_values)
-    else:
-        return id_filter
 
-    collection = db['Logs']
-    post = {
-        "game_date": entry['last_game_date'],
-        "game": entry['last_game'],
-        "result": result,
-        "players": entry['players']
-    }
+        self.last_spin_collection.update_one(id_filter, new_values)
 
-    collection.insert_one(post)
+    def is_last_spin_inserted(self) -> tuple[bool, dict]:
+        """
+        Checks if the last spin has been inserted into the logs.
 
-def get_list_of_games(db):
-    """
-    Retrieves a list of all games from the MongoDB database in alphabetically sorted order.
+        Returns:
+            tuple[bool, dict]: A tuple containing a boolean value and the last spin entry.
+        """
+        entry = self.last_spin_collection.find_one()
 
-    Parameters:
-        db (pymongo.mongo_client.MongoClient):
-            An instance of a MongoClient connected to the specified database.
+        if entry["is_inserted"]:
+            return True, entry
+        return False, entry
 
-    Returns:
-        List: A list of strings containing all game names (alphabetically sorted).
-    """
-    games = []
-    collection = db["Games"]
+    def insert_log_into_database(self, result: str) -> None:
+        """
+        Inserts the last spin into the logs collection.
 
-    for query in collection.find():
-        games.append(query["name"])
+        Parameters:
+            result (str): The result of the last spin.
 
-    # Sort the games alphabetically
-    games.sort()
-    return games
+        Returns:
+            None
+        """
+        is_inserted, entry = self.is_last_spin_inserted()
+        if not is_inserted:
+            new_values = { "$set": {
+                "is_inserted": True
+                }
+            }
+            id_filter = {'_id': entry['_id']}
+            self.last_spin_collection.update_one(id_filter, new_values)
+        else:
+            return
 
-def add_game_to_game_list(db, game):
-    """
-    Adds a game name to the list of games in the database.
-
-    Parameters:
-        db (pymongo.mongo_client.MongoClient):
-            An instance of a MongoClient connected to the specified database.
-        game (string): A name of the game.
-
-    Returns:
-        Bool: Indication whether the game was removed or not.
-    """
-    collection = db["Games"]
-
-    # Check whether there already is a game with that name
-    count = collection.count_documents({"name": game})
-    if count != 0:
-        return False
-
-    collection.insert_one({"name": game})
-    return True
-
-def remove_game_from_game_list(db, game):
-    """
-    Removes a game name from a list of games in the database.
-
-    Parameters:
-        db (pymongo.mongo_client.MongoClient):
-            An instance of a MongoClient connected to the specified database.
-        game (string): A name of the game.
-
-    Returns:
-        Bool: Indication whether the game was removed or not.
-    """
-    collection = db["Games"]
-
-    # Check whether there already is a game with that name
-    count = collection.count_documents({"name": game})
-    if count == 0:
-        return False
-
-    collection.delete_one({"name": game})
-    return True
-
-def add_new_player(db, user_name):
-    """
-    Add a new player into the Players collection.
-
-    Parameters:
-        db (pymongo.mongo_client.MongoClient):
-            An instance of a MongoClient connected to the specified database.
-        user_name (string): Users Dicord name (not server nick).
-
-    Returns:
-        Dictionary: Represents a new player document inserted in the DB.
-    """
-    collection = db["Players"]
-    new_document = {
-        "name": user_name,
-        "games": []
+        post = {
+            "game_date": entry['last_game_date'],
+            "game": entry['last_game'],
+            "result": result,
+            "players": entry['players']
         }
-    collection.insert_one(new_document)
-    return new_document
 
-def get_list_of_user_games(db, user_name):
-    """
-    Retrieves a list of all games from the MongoDB database in alphabetically sorted order.
-    for the specified user.
+        self.logs_collection.insert_one(post)
 
-    Parameters:
-        db (pymongo.mongo_client.MongoClient):
-            An instance of a MongoClient connected to the specified database.
-        user_name (string): Users Dicord name (not server nick).
+    def get_list_of_games(self) -> list[str]:
+        """
+        Returns a list of all games in the database.
 
-    Returns:
-        List: A list of strings containing all users game names (alphabetically sorted).
-    """
-    collection = db["Players"]
-    user = collection.find_one({"name": user_name})
-    if user is None:
-        user = add_new_player(db, user_name)
-    user_games = user["games"]
-    # Sort the games alphabetically
-    user_games.sort()
-    return user_games
+        Returns:
+            list[str]: A list of all games in the database.
+        """
+        games = []
 
-def add_game_to_user_game_list(db, user_name, game):
-    """
-    Adds a game name to the users list of games in the database.
+        for query in self.games_collection.find():
+            games.append(query["name"])
 
-    Parameters:
-        db (pymongo.mongo_client.MongoClient):
-            An instance of a MongoClient connected to the specified database.
-        user_name (string): Users Dicord name (not server nick).
-        game (string): A name of the game.
+        # Sort the games alphabetically
+        games.sort()
+        return games
 
-    Returns:
-        None
-    """
-    collection = db["Players"]
-    user = collection.find_one({"name": user_name})
-    if user is None:
-        add_new_player(db, user_name)
-    collection.update_one(
-        {"name": user_name},
-        {"$addToSet": {"games": game}}
-    )
+    def add_game_to_game_list(self, game: str) -> bool:
+        """
+        Adds a new game to the game list in the database.
 
-def remove_game_from_user_game_list(db, user_name, game):
-    """
-    Removes a game name from the users list of games in the database.   
+        Parameters:
+            game (str): The name of the game to add.
 
-    Parameters:
-        db (pymongo.mongo_client.MongoClient):
-            An instance of a MongoClient connected to the specified database.
-        user_name (string): Users Dicord name (not server nick).
-        game (string): A name of the game.
+        Returns:
+            bool: True if the game was added, False otherwise.
+        """
+        if self.is_in_game_list(game):
+            return False
 
-    Returns:
-        None
-    """
-    collection = db["Players"]
-    user = collection.find_one({"name": user_name})
-    if user is None:
-        add_new_player(db, user_name)
-    collection.update_one(
-        {"name": user_name},
-        {"$pull": {"games": game}}
-    )
+        self.games_collection.insert_one({"name": game})
+        return True
+
+    def remove_game_from_game_list(self, game: str) -> bool:
+        """
+        Removes a game from the game list in the database.
+
+        Parameters:
+            game (str): The name of the game to remove.
+
+        Returns:
+            bool: True if the game was removed, False otherwise.
+        """
+        if not self.is_in_game_list(game):
+            return False
+
+        self.games_collection.delete_one({"name": game})
+        return True
+    
+    def is_in_game_list(self, game: str) -> bool:
+        """
+        Checks if a game is in the game list.
+
+        Parameters:
+            game (str): The name of the game to check.
+
+        Returns:
+            bool: True if the game is in the list, False otherwise
+        """
+        count = self.games_collection.count_documents({"name": game})
+        if count == 0:
+            return False
+        return True
+
+    def add_new_player(self, user_name: str) -> dict:
+        """
+        Adds a new player to the database.
+
+        Parameters:
+            user_name (str): The name of the user to add.
+
+        Returns:
+            dict: The document of the newly added player.
+        """
+        new_document = {
+            "name": user_name,
+            "games": []
+            }
+        self.players_collection.insert_one(new_document)
+        return new_document
+
+    def get_list_of_user_games(self, user_name: str) -> list[str]:
+        """
+        Returns a list of games that the user plays.
+
+        Parameters:
+            user_name (str): The name of the user to get the games from.
+
+        Returns:
+            list[str]: A list of games that the user plays.
+        """
+        user = self.players_collection.find_one({"name": user_name})
+        if user is None:
+            user = self.add_new_player(user_name)
+        user_games: list = user["games"]
+        # Sort the games alphabetically
+        user_games.sort()
+        return user_games
+
+    def add_game_to_user_game_list(self, user_name: str, game: str) -> None:
+        """
+        Adds a game to the user's game list.
+
+        Parameters:
+            user_name (str): The name of the user to add the game to.
+            game (str): The name of the game to add.
+
+        Returns:
+            None
+        """
+        self.create_player_if_not_exists(user_name)
+
+        self.players_collection.update_one(
+            {"name": user_name},
+            {"$addToSet": {"games": game}}
+        )
+
+    def remove_game_from_user_game_list(self, user_name: str, game: str) -> None:
+        """
+        Removes a game from the user's game list.
+
+        Parameters:
+            user_name (str): The name of the user to remove the game from.
+            game (str): The name of the game to remove.
+
+        Returns:
+            None
+        """
+        self.create_player_if_not_exists(user_name)
+
+        self.players_collection.update_one(
+            {"name": user_name},
+            {"$pull": {"games": game}}
+        )
+
+    def create_player_if_not_exists(self, user_name: str) -> None:
+        """
+        Creates a new player if the player doesn't exist.
+
+        Parameters:
+            user_name (str): The name of the user to check.
+
+        Returns:
+            None
+        """
+        user = self.players_collection.find_one({"name": user_name})
+        if user is None:
+            self.add_new_player(user_name)
 
 def main():
     """
@@ -319,10 +285,10 @@ def main():
     Only used for testing this module.
 
     Returns:
-        None 
+        None
     """
-    db = connect_to_db()
-    collection = get_list_of_user_games(db, "tegez")
+    db = DbHandler()
+    collection = db.get_list_of_user_games("user")
 
     # Now you can perform operations on the collection, such as finding all players
     for query in collection:
