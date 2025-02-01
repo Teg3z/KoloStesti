@@ -3,13 +3,6 @@ db_handler.py
 
 A module containing the DbHandler class that handles all database operations.
 
-Main Functions:
-- get_last_spin_string: Returns the last spin in a formatted string.
-- update_last_spin: Updates the last spin in the database with the new game and players.
-- is_last_spin_inserted: Checks if the last spin has been inserted into the logs.
-- insert_log_into_database: Inserts the last spin into the logs collection.
-- get_list_of_games: Returns a list of all games in the database.
-
 Dependencies:
 - Requires pymongo to interact with the MongoDB database.
 - Requires ServerApi to specify the server API version.
@@ -22,7 +15,32 @@ from pymongo.server_api import ServerApi
 
 from env_var_loader import get_env_var_value
 
-class DbHandler:
+class Singleton(type):
+    """
+    Metaclass for implementing the Singleton pattern.
+    """
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        """
+        Ensures that only one instance of the class is created.
+        """
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+class DbHandler(metaclass=Singleton):
+    """
+    A class that handles all database operations.
+
+    Main Functions:
+    - get_last_spin_string: Returns the last spin in a formatted string.
+    - update_last_spin: Updates the last spin in the database with the new game and players.
+    - is_last_spin_inserted: Checks if the last spin has been inserted into the logs.
+    - insert_log_into_database: Inserts the last spin into the logs collection.
+    - get_list_of_games: Returns a list of all games in the database.
+    - add_game_to_game_list: Adds a new game to the game list in the database.
+    """
     def __init__(self, db_name='WheelOfLuck') -> None:
         """
         Initializes the database connection and creates the necessary collections.
@@ -177,7 +195,7 @@ class DbHandler:
 
         self.games_collection.delete_one({"name": game})
         return True
-    
+
     def is_in_game_list(self, game: str) -> bool:
         """
         Checks if a game is in the game list.
