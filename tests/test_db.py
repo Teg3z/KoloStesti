@@ -1,19 +1,21 @@
 import sys
 import os
+import unittest
+from datetime import datetime
 
 # Get the absolute path of the 'src' directory and add it to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-import unittest
-from datetime import datetime
-from src.db_handler import connect_to_db, insert_log_into_database
+from db_handler import DbHandler
 
 class TestDatabaseIntegration(unittest.TestCase):
-
+    """
+    This class tests the integration of the database with the bot.
+    """
     def setUp(self):
-        self.db = connect_to_db("WheelOfLuckTest")
-        self.collection = self.db['LastSpin']
-        self.logs_collection = self.db['Logs']
+        self.db = DbHandler("WheelOfLuckTest")
+        self.collection = self.db.last_spin_collection
+        self.logs_collection = self.db.logs_collection
 
     def tearDown(self):
         self.collection.delete_many({})
@@ -30,7 +32,7 @@ class TestDatabaseIntegration(unittest.TestCase):
         self.collection.insert_one(test_entry)
 
         # Call the function to insert log
-        filter_id = insert_log_into_database(self.db, "W")
+        filter_id = self.db.insert_log_into_database("W")
 
         # Check if the document was inserted into Logs
         inserted_log = self.logs_collection.find_one(filter_id)
