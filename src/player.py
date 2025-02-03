@@ -10,7 +10,7 @@ class Player:
     This class represents an actual player.
     """
 
-    def __init__(self, name, games):
+    def __init__(self, name: str, games: list[str]):
         """
         Initializes the Player class.
 
