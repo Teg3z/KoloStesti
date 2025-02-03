@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv(dotenv_path='variables.env')
 
-def get_env_var_value(env_var_name):
+def get_env_var_value(env_var_name: str) -> str:
     """
     Gets the value of the environment variable provided.
     If the environment variable isn't found, then the code exits with status code 1.
@@ -35,7 +35,7 @@ def get_env_var_value(env_var_name):
         sys.exit(1)
     return env_var_value
 
-def main():
+def main() -> None:
     """
     The main entry point of the script.
 
