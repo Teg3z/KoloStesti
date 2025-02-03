@@ -1,6 +1,11 @@
-# tests/test_game.py
+import sys
+import os
 import unittest
-from src.player import Player
+
+# Get the absolute path of the 'src' directory and add it to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
+from player import Player
 
 class TestGame(unittest.TestCase):
     def test_game_initialization(self):
