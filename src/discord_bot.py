@@ -116,7 +116,9 @@ async def on_message(message: discord.Message) -> None:
                     "Your game list is empty, add games via: \"!mygames add League of Legends\""
                 )
             else:
-                await message.channel.send(f"Your game list: \n\n{make_list_printable(users_games)}")
+                await message.channel.send(
+                    f"Your game list: \n\n{make_list_printable(users_games)}"
+                )
         elif message.content.startswith("!mygames add "):
             # Extract the game name
             game = get_game_name_from_command(message, "!mygames add ")
@@ -144,7 +146,10 @@ async def on_message(message: discord.Message) -> None:
                     f"'{game_to_remove}' wasn't found in your game list. (!mygames)"
                 )
 
-def get_game_name_from_command(command: discord.Message, command_to_remove_from_message: str) -> str:
+def get_game_name_from_command(
+        command: discord.Message,
+        command_to_remove_from_message: str
+    ) -> str:
     """
     Removes all of the string which doesn't represent a game name.
 
