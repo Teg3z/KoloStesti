@@ -1,20 +1,12 @@
 """
 discord_bot.py
 
-This module handles all the Discord bot interactions between the Wheel_of_luck and Discord Server. 
-
-Main Functions:
-- on_ready: An event handler for when the Discord bot is succesfully logged in.
-- send_message: Sends a message via the Discord bot to a specified channel.
-- get_reaction_users: Retrieves a list of users that put any reaction on the specific message.
-- run_bot: The main starting point of the Discord bot.
-- logout: Closing the currently opened Discord client.
+A module containing the DiscordBot class that represents a Discord bot.
 
 Dependencies:
-- Requires asyncio for establishing an event loop that can be accessed from the main wheel_of_luck
-and by Discord events.
-- Requires discord for interactions with the Discord servers.
-- Requires db_handler to provide all database operations.
+- Requires asyncio to run the Discord bot asynchronously.
+- Requires discord to interact with the Discord API.
+- Requires db_handler to interact with the database.
 - Requires env_var_loader to load environment variables.
 """
 
@@ -26,6 +18,23 @@ from db_handler import DbHandler
 from env_var_loader import get_env_var_value
 
 class DiscordBot:
+    """
+    A class that represents a Discord bot.
+    The bot can send messages, react to commands, and interact with the database.
+
+    Main Functions:
+    - run: Starts the Discord bot.
+    - logout: Logs out the Discord bot.
+    - wait_until_ready: Waits until the bot is ready.
+    - on_ready: An event handler for when the Discord bot is succesfully logged in.
+    - on_message: An event handler for when there is a message sent in the Discord channel.
+    - send_message: Sends a message via the Discord bot to a specified channel.
+
+    Attributes:
+    - token (string): The Discord bot token.
+    - text_channel_id (int): The Discord channel ID.
+    - client (discord.Client): The Discord client.
+    """
     def __init__(self) -> None:
 
         # Getting environment variables
@@ -48,11 +57,14 @@ class DiscordBot:
         # Setup database connection
         self.db = DbHandler()
 
+        # Event to signal when the bot is ready
+        self.ready_event = asyncio.Event()
+
         # Register event handlers
         self.client.event(self.on_ready)
         self.client.event(self.on_message)
 
-    def run_bot(self) -> None:
+    async def run(self) -> None:
         """
         The main starting point of the Discord bot.
         Creates a new event loop and starts a Discord client which takes control of the event loop,
@@ -61,7 +73,7 @@ class DiscordBot:
         Returns:
             None
         """
-        asyncio.run(self.client.start(self.token))
+        await self.client.start(self.token)
 
     async def logout(self) -> None:
         """
@@ -70,7 +82,17 @@ class DiscordBot:
         Returns:
             None
         """
+        print("Successfully logged out from Discord.")
         await self.client.close()
+
+    async def wait_until_ready(self) -> None:
+        """
+        Waits until the bot is ready.
+
+        Returns:
+            None
+        """
+        await self.ready_event.wait()
 
     async def on_ready(self) -> None:
         """
@@ -83,6 +105,7 @@ class DiscordBot:
             None
         """
         print(f"We have logged in as {self.client.user}")
+        self.ready_event.set()
 
     async def on_message(self, message: discord.Message) -> None:
         """
@@ -189,6 +212,7 @@ class DiscordBot:
             channel_id = self.text_channel_id
 
         message = await self.client.get_channel(channel_id).send(message)
+        print(f"Message sent: {message.content}")
         return message.id
     
     async def get_reaction_users(self, message_id: int, channel_id = None) -> list[str]:
@@ -260,14 +284,21 @@ async def main() -> None:
     # Create a new Discord bot
     bot = DiscordBot()
 
-    # Start the Discord bot client
-    await bot.run_bot()
+    # Start the Discord bot in the background
+    bot_task = asyncio.create_task(bot.run())
+
+    # Wait for the bot to be ready
+    await bot.wait_until_ready()
+    print(f"Status: {bot.client.status}")
 
     # Testing
     await bot.send_message("Just Testing")
 
     # On terminating the code
     await bot.logout()
+
+    # Wait for the bot task to complete (or cancel it if needed)
+    await bot_task
 
 if __name__ == '__main__':
     asyncio.run(main())
