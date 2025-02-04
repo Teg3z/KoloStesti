@@ -126,11 +126,11 @@ class DiscordBot:
                 # Ensure no extra spaces or newlines are present in each game name
                 await message.channel.send(
                     "Games list: \n\n" +
-                    f"{make_list_printable(self.db.get_list_of_games())}"
+                    f"{self._make_list_printable(self.db.get_list_of_games())}"
                 )
             elif message.content.startswith("!games add "):
                 # Extract the game name
-                game = get_game_name_from_command(message, "!games add ")
+                game = self._get_game_name_from_command(message, "!games add ")
 
                 added = self.db.add_game_to_game_list(game)
                 if added:
@@ -143,7 +143,7 @@ class DiscordBot:
                     )
             elif message.content.startswith("!games remove "):
                 # Extract the game name
-                game = get_game_name_from_command(message, "!games remove ")
+                game = self._get_game_name_from_command(message, "!games remove ")
 
                 removed = self.db.remove_game_from_game_list(game)
                 if removed:
@@ -163,11 +163,11 @@ class DiscordBot:
                     )
                 else:
                     await message.channel.send(
-                        f"Your game list: \n\n{make_list_printable(users_games)}"
+                        f"Your game list: \n\n{self._make_list_printable(users_games)}"
                     )
             elif message.content.startswith("!mygames add "):
                 # Extract the game name
-                game = get_game_name_from_command(message, "!mygames add ")
+                game = self._get_game_name_from_command(message, "!mygames add ")
 
                 if game in self.db.get_list_of_games():
                     self.db.add_game_to_user_game_list(message.author.name, game)
@@ -180,7 +180,7 @@ class DiscordBot:
                     )
             elif message.content.startswith("!mygames remove "):
                 # Extract the game name
-                game_to_remove = get_game_name_from_command(message, "!mygames remove ")
+                game_to_remove = self._get_game_name_from_command(message, "!mygames remove ")
 
                 if game_to_remove in self.db.get_list_of_user_games(message.author.name):
                     self.db.remove_game_from_user_game_list(message.author.name, game_to_remove)
@@ -242,35 +242,35 @@ class DiscordBot:
 
         return list(users)
 
-def get_game_name_from_command(
-        command: discord.Message,
-        command_to_remove_from_message: str
-    ) -> str:
-    """
-    Removes all of the string which doesn't represent a game name.
+    def _get_game_name_from_command(
+            command: discord.Message,
+            command_to_remove_from_message: str
+        ) -> str:
+        """
+        Removes all of the string which doesn't represent a game name.
 
-    Parameters:
-        command (string): A message command posted by the user in Discord.
-        command_to_remove_from_message (string):
-            Part of the command that is to be removed in order to get the game name.
+        Parameters:
+            command (string): A message command posted by the user in Discord.
+            command_to_remove_from_message (string):
+                Part of the command that is to be removed in order to get the game name.
 
-    Returns:
-        string: Game name.
-    """
-    return command.content[len(command_to_remove_from_message):].strip()
+        Returns:
+            string: Game name.
+        """
+        return command.content[len(command_to_remove_from_message):].strip()
 
-def make_list_printable(items_list: list[str]) -> str:
-    """
-    Makes the lists items stripped of any extra white characters.
-    Every item will be on its separate line.
+    def _make_list_printable(items_list: list[str]) -> str:
+        """
+        Makes the lists items stripped of any extra white characters.
+        Every item will be on its separate line.
 
-    Parameters:
-        items_list (List): The list of items to to be made printable.
+        Parameters:
+            items_list (List): The list of items to to be made printable.
 
-    Returns:
-        List: A new list of items from items_list separated by a new line.
-    """
-    return "\n".join(item.strip() for item in items_list)
+        Returns:
+            List: A new list of items from items_list separated by a new line.
+        """
+        return "\n".join(item.strip() for item in items_list)
 
 async def main() -> None:
     """
