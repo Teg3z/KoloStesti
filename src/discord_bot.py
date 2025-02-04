@@ -48,7 +48,7 @@ client = discord.Client(intents=intents)
 db = DbHandler()
 
 @client.event
-async def on_ready():
+async def on_ready() -> None:
     """
     An event handler for when the Discord bot is succesfully
     logged in and ready to receive commands.
@@ -61,7 +61,7 @@ async def on_ready():
     print(f"We have logged in as {client.user}")
 
 @client.event
-async def on_message(message):
+async def on_message(message: discord.Message) -> None:
     """
     An event handler for when there is a message sent in the Discord
     channel where the bot is connected in.
@@ -116,7 +116,9 @@ async def on_message(message):
                     "Your game list is empty, add games via: \"!mygames add League of Legends\""
                 )
             else:
-                await message.channel.send(f"Your game list: \n\n{make_list_printable(users_games)}")
+                await message.channel.send(
+                    f"Your game list: \n\n{make_list_printable(users_games)}"
+                )
         elif message.content.startswith("!mygames add "):
             # Extract the game name
             game = get_game_name_from_command(message, "!mygames add ")
@@ -144,7 +146,10 @@ async def on_message(message):
                     f"'{game_to_remove}' wasn't found in your game list. (!mygames)"
                 )
 
-def get_game_name_from_command(command, command_to_remove_from_message):
+def get_game_name_from_command(
+        command: discord.Message,
+        command_to_remove_from_message: str
+    ) -> str:
     """
     Removes all of the string which doesn't represent a game name.
 
@@ -158,7 +163,7 @@ def get_game_name_from_command(command, command_to_remove_from_message):
     """
     return command.content[len(command_to_remove_from_message):].strip()
 
-def make_list_printable(items_list):
+def make_list_printable(items_list: list[str]) -> str:
     """
     Makes the lists items stripped of any extra white characters.
     Every item will be on its separate line.
@@ -171,7 +176,7 @@ def make_list_printable(items_list):
     """
     return "\n".join(item.strip() for item in items_list)
 
-async def send_message(message, discord_channel_id = DISCORD_CHANNEL_ID):
+async def send_message(message: discord.Message, discord_channel_id = DISCORD_CHANNEL_ID) -> int:
     """
     Sends a message via the Discord bot to a specified channel.
 
@@ -186,7 +191,7 @@ async def send_message(message, discord_channel_id = DISCORD_CHANNEL_ID):
     message = await client.get_channel(discord_channel_id).send(message)
     return message.id
 
-async def get_reaction_users(message_id, channel_id = DISCORD_CHANNEL_ID):
+async def get_reaction_users(message_id: int, channel_id = DISCORD_CHANNEL_ID) -> list[str]:
     """
     Retrieves a list of users that put any reaction on the specific message in Discord chat.
 
@@ -210,7 +215,7 @@ async def get_reaction_users(message_id, channel_id = DISCORD_CHANNEL_ID):
 
     return list(users)
 
-def run_bot(discord_bot_token = DISCORD_BOT_TOKEN):
+def run_bot(discord_bot_token = DISCORD_BOT_TOKEN) -> None:
     """
     The main starting point of the Discord bot.
     Creates a new event loop and starts a Discord client which takes control of the event loop,
@@ -225,7 +230,7 @@ def run_bot(discord_bot_token = DISCORD_BOT_TOKEN):
     """
     asyncio.run(client.start(discord_bot_token))
 
-async def logout():
+async def logout() -> None:
     """
     Closing the currently opened Discord client, meaning the Discord bot logging off. 
 
@@ -234,7 +239,7 @@ async def logout():
     """
     await client.close()
 
-async def main():
+async def main() -> None:
     """
     The main entry point of the script.
 

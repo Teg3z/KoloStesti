@@ -36,7 +36,12 @@ import PySimpleGUI
 import discord_bot
 from db_handler import DbHandler
 
-def remove_unwated_games(game_ui_texts, games, window, common_games):
+def remove_unwated_games(
+        game_ui_texts: list[PySimpleGUI.Text],
+        games: list[str],
+        window: PySimpleGUI.Window,
+        common_games: list[str]
+    ) -> tuple[list[PySimpleGUI.Text], list[str]]:
     """
     Hides every game in the wheels UI that isn't mentioned in the `common_games` parameter.
 
@@ -67,7 +72,10 @@ def remove_unwated_games(game_ui_texts, games, window, common_games):
     window.refresh()
     return wanted_game_ui_texts, wanted_games
 
-def make_all_games_texts_visible(games_ui_texts, window):
+def make_all_games_texts_visible(
+        games_ui_texts: list[PySimpleGUI.Text],
+        window: PySimpleGUI.Window
+        ) -> None:
     """
     Makes vibisle all UI game name texts in the main window of the application.
 
@@ -82,7 +90,7 @@ def make_all_games_texts_visible(games_ui_texts, window):
         # Get() function here gets the actuall string text of the ui_text
         window[_text.Get()].Update(visible = True)
 
-def whiten_game_ui_text(games_ui_texts):
+def whiten_game_ui_text(games_ui_texts: list[PySimpleGUI.Text]) -> None:
     """
     Makes the text of all UI texts white
 
@@ -95,7 +103,7 @@ def whiten_game_ui_text(games_ui_texts):
     for _text in games_ui_texts:
         _text.update(text_color='White')
 
-def choose_winning_game(games):
+def choose_winning_game(games: list[str]) -> str:
     """
     Randomly chooses one game out of a list of Game objects based on their
     desire percentage.
@@ -110,7 +118,12 @@ def choose_winning_game(games):
     winning_games = random.choices(list(games), k=1)
     return winning_games[0]
 
-async def spin_wheel(games_ui_texts, games, main_window, result_ui):
+async def spin_wheel(
+        games_ui_texts: list[PySimpleGUI.Text],
+        games: list[str],
+        main_window: PySimpleGUI.Window,
+        result_ui: PySimpleGUI.Text
+        ) -> PySimpleGUI.Text:
     """
     The whole wheel spinning logic is in this function.
     
@@ -174,7 +187,7 @@ async def spin_wheel(games_ui_texts, games, main_window, result_ui):
 
     return rolled_game_ui_text
 
-def start_discord_bot():
+def start_discord_bot() -> threading.Thread:
     """
     Starts a new Thread for the Discord bot to run on.
     
@@ -185,7 +198,7 @@ def start_discord_bot():
     bot_thread.start()
     return bot_thread
 
-def send_message_to_discord(message):
+def send_message_to_discord(message: str) -> int:
     """
     Sends a new coroutine to the thread that the Discord bot is running on,
     telling the bot to send a message on Discord.
@@ -204,7 +217,7 @@ def send_message_to_discord(message):
     message_id = future.result()
     return message_id
 
-def get_reactions_users(message_id):
+def get_reactions_users(message_id: int) -> list[str]:
     """
     Sends a new coroutine to the thread that the Discord bot is running on,
     telling the bot to return a list of all Discord user names that put a reaction
@@ -224,7 +237,7 @@ def get_reactions_users(message_id):
     users = future.result()
     return users
 
-def logout_discord_bot():
+def logout_discord_bot() -> None:
     """
     Sends a new coroutine to the thread that the Discord bot is running on,
     telling the bot to log out, resulting in the closing of the event loop
@@ -235,7 +248,7 @@ def logout_discord_bot():
     """
     asyncio.run_coroutine_threadsafe(discord_bot.logout(), discord_bot.client.loop)
 
-def change_last_spin_insertion_visibility(window, db: DbHandler, visible):
+def change_last_spin_insertion_visibility(window: PySimpleGUI.Window, db: DbHandler, visible: bool):
     """
     Handles visibility of the corresponding UI elements taking care of last spin
     insertion into the DB. 
@@ -259,7 +272,7 @@ def change_last_spin_insertion_visibility(window, db: DbHandler, visible):
 
     window.refresh()
 
-async def main():
+async def main() -> None:
     """
     The main entry point of the application.
 
