@@ -22,7 +22,6 @@ Main Functions:
 Dependencies:
 - Requires asyncio to manage the event loop, so that the application can wait for coroutines,
     like waiting for Discord bot to send a message.
-- Requires threading for running the Discord bot on a separate thread.
 - Requires PySimpleGUI for the application's simple UI.
 - Requires discord_bot to send commands to the Discord bot.
 - Requires db_handler for all the databe operations and establishment.
@@ -30,10 +29,9 @@ Dependencies:
 
 import random
 import asyncio
-import threading
 import PySimpleGUI
 
-import discord_bot
+from discord_bot import DiscordBot
 from db_handler import DbHandler
 
 def remove_unwated_games(
@@ -187,67 +185,6 @@ async def spin_wheel(
 
     return rolled_game_ui_text
 
-def start_discord_bot() -> threading.Thread:
-    """
-    Starts a new Thread for the Discord bot to run on.
-    
-    Returns:
-        threading.Thread: A newly stared thread on which the Discord bot is running.
-    """
-    bot_thread = threading.Thread(target=discord_bot.run_bot, daemon=True)
-    bot_thread.start()
-    return bot_thread
-
-def send_message_to_discord(message: str) -> int:
-    """
-    Sends a new coroutine to the thread that the Discord bot is running on,
-    telling the bot to send a message on Discord.
-
-    Parameters:
-        message (string): A message to be sent via the Discord bot.
-
-    Returns:
-        int: The Discord ID of the sent message.
-    """
-    # Run the send_message coroutine in the bot's event loop
-    future = asyncio.run_coroutine_threadsafe(
-        discord_bot.send_message(message),
-        discord_bot.client.loop
-    )
-    message_id = future.result()
-    return message_id
-
-def get_reactions_users(message_id: int) -> list[str]:
-    """
-    Sends a new coroutine to the thread that the Discord bot is running on,
-    telling the bot to return a list of all Discord user names that put a reaction
-    on the message with `message_id`.
-
-    Parameters:
-        message_id (int): A message to be sent via the Discord bot.
-
-    Returns:
-        list: A list of all user names that have reacted to the message.
-    """
-    # Run the send_message coroutine in the bot's event loop
-    future = asyncio.run_coroutine_threadsafe(
-        discord_bot.get_reaction_users(message_id),
-        discord_bot.client.loop
-    )
-    users = future.result()
-    return users
-
-def logout_discord_bot() -> None:
-    """
-    Sends a new coroutine to the thread that the Discord bot is running on,
-    telling the bot to log out, resulting in the closing of the event loop
-    in the Discord bot thread.
-
-    Returns:
-        None
-    """
-    asyncio.run_coroutine_threadsafe(discord_bot.logout(), discord_bot.client.loop)
-
 def change_last_spin_insertion_visibility(window: PySimpleGUI.Window, db: DbHandler, visible: bool):
     """
     Handles visibility of the corresponding UI elements taking care of last spin
@@ -286,8 +223,14 @@ async def main() -> None:
     # Establish database connection
     db = DbHandler()
 
-    # Start the Discord bot
-    bot_thread = start_discord_bot()
+    # Create a new Discord bot
+    bot = DiscordBot()
+
+    # Start the Discord bot in the background
+    bot_task = asyncio.create_task(bot.run())
+
+    # Wait for the bot to be ready
+    await bot.wait_until_ready()
 
     # All the playable games
     games = db.get_list_of_games()
@@ -412,18 +355,18 @@ async def main() -> None:
             continue
         if event == "SEND REACTION":
             rolled_game = None
-            message_id = send_message_to_discord("Let's spin the wheel of luck! Who's in?")
+            message_id = await bot.send_message("Let's spin the wheel of luck! Who's in?")
             continue
         if event == "PLAY REACTION":
             # Check that there is a message already sent in the DC chat
             if message_id is None:
                 print("You have to send a reaction message first.")
                 continue
-            players = get_reactions_users(message_id)
+            players = await bot.get_reaction_users(message_id)
 
             # No reaction case
             if not players:
-                send_message_to_discord("Nobody wants to participate :(")
+                await bot.send_message("Nobody wants to participate :(")
                 continue
 
             # Get list of games that those players have in common
@@ -464,15 +407,15 @@ async def main() -> None:
         if  event == "ANNOUNCE":
             if rolled_game is not None:
                 # Call Discord Bot to announce the game that has been rolled
-                send_message_to_discord(
+                await bot.send_message(
                     "Going to play " + rolled_game.Get() + ", anyone wanna join in?"
                 )
             continue
         # Window closing event
         # Properly shutting down the bot and its loop
-        logout_discord_bot()
+        await bot.logout()
         # Wait for the logout operation to end, closing the discord bot thread
-        bot_thread.join()
+        await bot_task
         break
 
 if __name__ == "__main__":
