@@ -9,6 +9,7 @@ Dependencies:
 """
 
 import commands
+from db_handler import DbHandler
 
 class CommandFactory:
     """
@@ -20,15 +21,16 @@ class CommandFactory:
     Attributes:
     - commands (list): A list of all command classes.
     """
-    def __init__(self) -> None:
+    def __init__(self, db: DbHandler) -> None:
         self.commands: list[commands.Command] = [
-            commands.ListGamesCommand("!games "),
-            commands.AddGameCommand("!addgame "),
-            commands.RemoveGameCommand("!removegame "),
-            commands.MyGamesCommand("!mygames "),
-            commands.AddUserGameCommand("!add "),
-            commands.RemoveUserGameCommand("!remove ")
+            commands.ListGamesCommand("!games", "List all games in the server.", db),
+            commands.AddGameCommand("!addgame", "Add a game to the server's game list.", db),
+            commands.RemoveGameCommand("!removegame", "Remove a game from the server's game list.", db),
+            commands.MyGamesCommand("!mygames", "List all games of the user.", db),
+            commands.AddUserGameCommand("!add", "Add a game to the user's game list.", db),
+            commands.RemoveUserGameCommand("!remove ", "Remove a game from the user's game list.", db),
         ]
+        self.commands.append(commands.HelpCommand("!help", "List all available commands.", self.commands))
 
     def get_command(self, message_content: str) -> commands.Command | None:
         """

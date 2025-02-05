@@ -15,8 +15,8 @@ import asyncio
 import discord
 
 from db_handler import DbHandler
-from env_var_loader import get_env_var_value
 from command_factory import CommandFactory
+from env_var_loader import get_env_var_value
 
 class DiscordBot:
     """
@@ -59,7 +59,7 @@ class DiscordBot:
         self.db = DbHandler()
 
         # Command factory to create commands
-        self.command_factory = CommandFactory()
+        self.command_factory = CommandFactory(self.db)
 
         # Event to signal when the bot is ready
         self.ready_event = asyncio.Event()
@@ -128,7 +128,8 @@ class DiscordBot:
         if message.content.startswith("!"):
             command = self.command_factory.get_command(message.content)
             if command is not None:
-                await command.execute(self, message)
+                print("Command received:", message.content)
+                await command.execute(self.db, message)
             else:
                 await message.channel.send("Unknown command. Type `!help` for a list of commands.")
 
