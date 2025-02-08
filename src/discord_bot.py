@@ -117,6 +117,7 @@ class DiscordBot:
         Returns:
             None
         """
+        print(f"Received message: {message.content}")
         # Ensure the bot doesn't respond to itself
         if message.author == self.client.user:
             return
@@ -124,10 +125,16 @@ class DiscordBot:
         if message.content.startswith("!"):
             if message.content == "!games":
                 # Ensure no extra spaces or newlines are present in each game name
-                await message.channel.send(
-                    "Games list: \n\n" +
-                    f"{self._make_list_printable(self.db.get_list_of_games())}"
-                )
+                print("Games command was called.")
+                print(self.db.get_list_of_games())
+                try:
+                    msg = await message.channel.send(
+                        "Games list: \n\n" +
+                        f"{_make_list_printable(self.db.get_list_of_games())}"
+                    )
+                except Exception as e:
+                    print(f"Error: {e}")
+                print("Message sent: ", msg.content)
             elif message.content.startswith("!games add "):
                 # Extract the game name
                 game = self._get_game_name_from_command(message, "!games add ")
@@ -163,7 +170,7 @@ class DiscordBot:
                     )
                 else:
                     await message.channel.send(
-                        f"Your game list: \n\n{self._make_list_printable(users_games)}"
+                        f"Your game list: \n\n{_make_list_printable(users_games)}"
                     )
             elif message.content.startswith("!mygames add "):
                 # Extract the game name
@@ -259,18 +266,18 @@ class DiscordBot:
         """
         return command.content[len(command_to_remove_from_message):].strip()
 
-    def _make_list_printable(items_list: list[str]) -> str:
-        """
-        Makes the lists items stripped of any extra white characters.
-        Every item will be on its separate line.
+def _make_list_printable(items_list: list[str]) -> str:
+    """
+    Makes the lists items stripped of any extra white characters.
+    Every item will be on its separate line.
 
-        Parameters:
-            items_list (List): The list of items to to be made printable.
+    Parameters:
+        items_list (List): The list of items to to be made printable.
 
-        Returns:
-            List: A new list of items from items_list separated by a new line.
-        """
-        return "\n".join(item.strip() for item in items_list)
+    Returns:
+        List: A new list of items from items_list separated by a new line.
+    """
+    return "\n".join(item.strip() for item in items_list)
 
 async def main() -> None:
     """
@@ -285,7 +292,7 @@ async def main() -> None:
     bot = DiscordBot()
 
     # Start the Discord bot in the background
-    bot_task = asyncio.create_task(bot.run())
+    await bot.run()
 
     # Wait for the bot to be ready
     await bot.wait_until_ready()
@@ -295,10 +302,7 @@ async def main() -> None:
     await bot.send_message("Just Testing")
 
     # On terminating the code
-    await bot.logout()
-
-    # Wait for the bot task to complete (or cancel it if needed)
-    await bot_task
+    # await bot.logout()
 
 if __name__ == '__main__':
     asyncio.run(main())
