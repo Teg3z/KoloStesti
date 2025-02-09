@@ -44,13 +44,13 @@ def remove_unwated_games(
     Hides every game in the wheels UI that isn't mentioned in the `common_games` parameter.
 
     Parameters:
-        games_ui_texts (PySimpleGUI.Text): UI texts of all the game names.
+        games_ui_texts (sg.Text): UI texts of all the game names.
         games (list[Game]): A list of all games represented by Game objects.
-        window (PySimpleGUI.Window): The main UI window of the application.
+        window (sg.Window): The main UI window of the application.
         common_games (list[string]): A list of game names that the players have in common.
 
     Returns:
-        list[PySimpleGUI.Text]:
+        list[sg.Text]:
             Contains all UI texts of games that will be visible during the spin.
         list[Game]:
             Contains all the Game objects with the game names that the players have in common.
@@ -78,8 +78,8 @@ def make_all_games_texts_visible(
     Makes vibisle all UI game name texts in the main window of the application.
 
     Parameters:
-        games_ui_texts (PySimpleGUI.Text): UI texts of all the game names.
-        window (PySimpleGUI.Window): The main UI window of the application.
+        games_ui_texts (sg.Text): UI texts of all the game names.
+        window (sg.Window): The main UI window of the application.
 
     Returns:
         None
@@ -93,7 +93,7 @@ def whiten_game_ui_text(games_ui_texts: list[sg.Text]) -> None:
     Makes the text of all UI texts white
 
     Parameters:
-        games_ui_texts (PySimpleGUI.Text): UI texts of all the game names.
+        games_ui_texts (sg.Text): UI texts of all the game names.
 
     Returns:
         None
@@ -129,13 +129,13 @@ async def spin_wheel(
     slowing down until a certain spin speed and rolled game is reached.
 
     Parameters:
-        games_ui_texts (PySimpleGUI.Text): UI texts of all game names.
+        games_ui_texts (sg.Text): UI texts of all game names.
         games (list[Game]): A list of games represented by Game objects.
-        window (PySimpleGUI.Window): The main UI window of the application.
-        result_ui (PySimpleGUI.Text): The UI text object where the spin result will be shown.
+        window (sg.Window): The main UI window of the application.
+        result_ui (sg.Text): The UI text object where the spin result will be shown.
 
     Returns:
-        PySimpleGUI.Text: The changed `result_ui` object containing the name of the resulting game.
+        sg.Text: The changed `result_ui` object containing the name of the resulting game.
     """
     # Start with all games whitened.
     whiten_game_ui_text(games_ui_texts)
@@ -191,7 +191,7 @@ def change_last_spin_insertion_visibility(window: sg.Window, db: DbHandler, visi
     insertion into the DB. 
 
     Parameters:
-        window (PySimpleGUI.Window):
+        window (sg.Window):
             The main UI window of the application.
         db (pymongo.mongo_client.MongoClient):
             An instance of a MongoClient connected to the specified database.
