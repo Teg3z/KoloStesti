@@ -340,7 +340,7 @@ async def main() -> None:
     # Each iteration represents a wheel spin
     while True:
         # Reads values from the applications main window
-        event, _ = main_window.read()
+        event, _ = main_window.read(timeout=100)
 
         # Pressing W/L buttons condition
         if event == "W":
@@ -348,16 +348,16 @@ async def main() -> None:
             db.insert_log_into_database(event)
             change_last_spin_insertion_visibility(main_window, db, False)
             continue
-        if event == "L":
+        elif event == "L":
             win_lose_msg.update("\nYOU SUCK")
             db.insert_log_into_database(event)
             change_last_spin_insertion_visibility(main_window, db, False)
             continue
-        if event == "SEND REACTION":
+        elif event == "SEND REACTION":
             rolled_game = None
             message_id = await bot.send_message("Let's spin the wheel of luck! Who's in?")
             continue
-        if event == "PLAY REACTION":
+        elif event == "PLAY REACTION":
             # Check that there is a message already sent in the DC chat
             if message_id is None:
                 print("You have to send a reaction message first.")
@@ -404,19 +404,22 @@ async def main() -> None:
             # Show insertion
             change_last_spin_insertion_visibility(main_window, db, True)
             continue
-        if  event == "ANNOUNCE":
+        elif event == "ANNOUNCE":
             if rolled_game is not None:
                 # Call Discord Bot to announce the game that has been rolled
                 await bot.send_message(
                     "Going to play " + rolled_game.Get() + ", anyone wanna join in?"
                 )
             continue
-        # Window closing event
-        # Properly shutting down the bot and its loop
-        await bot.logout()
-        # Wait for the logout operation to end, closing the discord bot thread
-        await bot_task
-        break
+        elif event == PySimpleGUI.WIN_CLOSED:
+            # Properly shutting down the bot and its loop
+            await bot.logout()
+            # Wait for the logout operation to end, closing the discord bot thread
+            await bot_task
+            main_window.close()
+            break
+        # Yield control back to the event loop
+        await asyncio.sleep(0.1)
 
 if __name__ == "__main__":
     # Create an event loop for the main function

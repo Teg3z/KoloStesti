@@ -30,7 +30,6 @@ class Command(ABC):
         Executes the command.
 
         Parameters:
-            db (DbHandler): The database handler object.
             message (discord.Message): The message containing the command and its parameters.
         """
 

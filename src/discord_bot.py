@@ -124,14 +124,20 @@ class DiscordBot:
         # Ensure the bot doesn't respond to itself
         if message.author == self.client.user:
             return
-        # Check if the message starts with "!games"
+        
+        print(f"Received message: {message.content}")
+        # Check if the message is a command
         if message.content.startswith("!"):
-            command = self.command_factory.get_command(message.content)
-            if command is not None:
-                print("Command received:", message.content)
-                await command.execute(self.db, message)
-            else:
-                await message.channel.send("Unknown command. Type `!help` for a list of commands.")
+            try:
+                command = self.command_factory.get_command(message.content)
+                if command is not None:
+                    print("Command received:", message.content)
+                    await command.execute(message)
+                else:
+                    await message.channel.send("Unknown command. Type `!help` for a list of commands.")
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                await message.channel.send("An error occurred while executing the command.")
 
     async def send_message(
             self,
@@ -196,7 +202,7 @@ async def main() -> None:
     bot = DiscordBot()
 
     # Start the Discord bot in the background
-    bot_task = asyncio.create_task(bot.run())
+    await bot.run()
 
     # Wait for the bot to be ready
     await bot.wait_until_ready()
@@ -206,10 +212,7 @@ async def main() -> None:
     await bot.send_message("Just Testing")
 
     # On terminating the code
-    await bot.logout()
-
-    # Wait for the bot task to complete (or cancel it if needed)
-    await bot_task
+    # await bot.logout()
 
 if __name__ == '__main__':
     asyncio.run(main())
