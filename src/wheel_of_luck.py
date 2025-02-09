@@ -29,17 +29,17 @@ Dependencies:
 
 import random
 import asyncio
-import PySimpleGUI
+import PySimpleGUI as sg
 
 from discord_bot import DiscordBot
 from db_handler import DbHandler
 
 def remove_unwated_games(
-        game_ui_texts: list[PySimpleGUI.Text],
+        game_ui_texts: list[sg.Text],
         games: list[str],
-        window: PySimpleGUI.Window,
+        window: sg.Window,
         common_games: list[str]
-    ) -> tuple[list[PySimpleGUI.Text], list[str]]:
+    ) -> tuple[list[sg.Text], list[str]]:
     """
     Hides every game in the wheels UI that isn't mentioned in the `common_games` parameter.
 
@@ -71,8 +71,8 @@ def remove_unwated_games(
     return wanted_game_ui_texts, wanted_games
 
 def make_all_games_texts_visible(
-        games_ui_texts: list[PySimpleGUI.Text],
-        window: PySimpleGUI.Window
+        games_ui_texts: list[sg.Text],
+        window: sg.Window
         ) -> None:
     """
     Makes vibisle all UI game name texts in the main window of the application.
@@ -88,7 +88,7 @@ def make_all_games_texts_visible(
         # Get() function here gets the actuall string text of the ui_text
         window[_text.Get()].Update(visible = True)
 
-def whiten_game_ui_text(games_ui_texts: list[PySimpleGUI.Text]) -> None:
+def whiten_game_ui_text(games_ui_texts: list[sg.Text]) -> None:
     """
     Makes the text of all UI texts white
 
@@ -117,11 +117,11 @@ def choose_winning_game(games: list[str]) -> str:
     return winning_games[0]
 
 async def spin_wheel(
-        games_ui_texts: list[PySimpleGUI.Text],
+        games_ui_texts: list[sg.Text],
         games: list[str],
-        main_window: PySimpleGUI.Window,
-        result_ui: PySimpleGUI.Text
-        ) -> PySimpleGUI.Text:
+        main_window: sg.Window,
+        result_ui: sg.Text
+        ) -> sg.Text:
     """
     The whole wheel spinning logic is in this function.
     
@@ -185,7 +185,7 @@ async def spin_wheel(
 
     return rolled_game_ui_text
 
-def change_last_spin_insertion_visibility(window: PySimpleGUI.Window, db: DbHandler, visible: bool):
+def change_last_spin_insertion_visibility(window: sg.Window, db: DbHandler, visible: bool):
     """
     Handles visibility of the corresponding UI elements taking care of last spin
     insertion into the DB. 
@@ -246,10 +246,10 @@ async def main() -> None:
     font = ("Arial", 18)
 
     # Texts
-    result_ui = PySimpleGUI.Text("", text_color=fg_color, background_color=bg_color, font=font)
+    result_ui = sg.Text("", text_color=fg_color, background_color=bg_color, font=font)
     last_game_result = db.get_last_spin_string()
     is_last_spin_inserted, _ = db.is_last_spin_inserted()
-    last_game_result_ui = PySimpleGUI.Text(
+    last_game_result_ui = sg.Text(
         f"\nLast game result? \n({last_game_result})",
         text_color=fg_color,
         background_color=bg_color,
@@ -258,12 +258,12 @@ async def main() -> None:
         visible= not is_last_spin_inserted
     )
 
-    win_lose_msg = PySimpleGUI.Text("", text_color=fg_color, background_color=bg_color, font=font)
+    win_lose_msg = sg.Text("", text_color=fg_color, background_color=bg_color, font=font)
 
     games_ui_texts = []
 
     for _game in games:
-        games_ui_texts.append(PySimpleGUI.Text(
+        games_ui_texts.append(sg.Text(
             _game,
             text_color=fg_color,
             font=font,
@@ -272,7 +272,7 @@ async def main() -> None:
         ))
 
     # Buttons
-    win = PySimpleGUI.Button(
+    win = sg.Button(
         "W",
         button_color=btn_color,
         font=font,
@@ -280,7 +280,7 @@ async def main() -> None:
         size=btn_size,
         visible=not is_last_spin_inserted
     )
-    lose = PySimpleGUI.Button(
+    lose = sg.Button(
         "L",
         button_color=btn_color,
         font=font,
@@ -288,21 +288,21 @@ async def main() -> None:
         size=btn_size,
         visible=not is_last_spin_inserted
     )
-    announce_button = PySimpleGUI.Button(
+    announce_button = sg.Button(
         "ANNOUNCE",
         button_color=btn_color,
         font=font,
         mouseover_colors=btn_mouseover_color,
         size=btn_size
     )
-    send_reaction_message_button = PySimpleGUI.Button(
+    send_reaction_message_button = sg.Button(
         "SEND REACTION",
         button_color=btn_color,
         font=font,
         mouseover_colors=btn_mouseover_color,
         size=btn_size
     )
-    play_by_reactions_button = PySimpleGUI.Button(
+    play_by_reactions_button = sg.Button(
         "PLAY REACTION",
         button_color=btn_color,
         font=font,
@@ -326,7 +326,7 @@ async def main() -> None:
     layout.append([win_lose_msg])
 
     # Applications main window setup
-    main_window = PySimpleGUI.Window(
+    main_window = sg.Window(
         title="Wheel of Luck",
         layout=layout,
         background_color=bg_color,
@@ -411,7 +411,7 @@ async def main() -> None:
                     "Going to play " + rolled_game.Get() + ", anyone wanna join in?"
                 )
             continue
-        elif event == PySimpleGUI.WIN_CLOSED:
+        elif event == sg.WIN_CLOSED:
             # Properly shutting down the bot and its loop
             await bot.logout()
             # Wait for the logout operation to end, closing the discord bot thread
