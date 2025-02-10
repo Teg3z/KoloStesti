@@ -30,6 +30,8 @@ Dependencies:
 import random
 import asyncio
 import PySimpleGUI as sg
+from pathlib import Path
+import json
 
 from discord_bot import DiscordBot
 from db_handler import DbHandler
@@ -209,6 +211,93 @@ def change_last_spin_insertion_visibility(window: sg.Window, db: DbHandler, visi
 
     window.refresh()
 
+# Settings Window Function
+async def open_settings_window(font: str, bg_color: str, fg_color: str):
+    # Load existing config
+    config = load_config()
+
+    # Default values for textboxes (use existing config values if available)
+    dc_token = config.get("DISCORD_BOT_TOKEN", "")
+    channel_id = config.get("CHANNEL_ID", "")
+    db_connection = config.get("DB_CONNECTION_STRING", "")
+
+    text_size = (15, 1)
+    settings_layout = [
+        [sg.Text(
+            "Discord bot token:",
+            size=text_size,
+            font=font,
+            background_color=bg_color,
+            text_color=fg_color
+            ), sg.InputText(default_text=dc_token, key='dc_token')],
+        [sg.Text(
+            "Channel ID:",
+            size=text_size,
+            font=font,
+            background_color=bg_color,
+            text_color=fg_color
+            ), sg.InputText(default_text=channel_id ,key='channel_id')],
+        [sg.Text(
+            "MongoDB:",
+            size=text_size,
+            font=font,
+            background_color=bg_color,
+            text_color=fg_color
+            ), sg.InputText(default_text=db_connection ,key='db_connection')],
+        [sg.Button("Save", button_color="Green"), sg.Button("Cancel", button_color="Red")]
+    ]
+    settings_window = sg.Window(
+        "Settings",
+        layout=settings_layout,
+        modal=True,
+        background_color=bg_color
+    )
+    while True:
+        event, values = settings_window.read(timeout=100)
+        if event == "Save":
+            config = {
+                "DISCORD_BOT_TOKEN": values['dc_token'],
+                "CHANNEL_ID": values['channel_id'],
+                "DB_CONNECTION_STRING": values['db_connection']
+            }
+            print("Settings to be saved:", config)
+            save_config(config)
+            break
+        elif event == sg.WIN_CLOSED or event == "Cancel":
+            break
+        # Yield control back to the event loop
+        await asyncio.sleep(0.1)
+    settings_window.close()
+
+def load_config():
+    """Load configuration from the config file."""
+    config_path = get_config_path()
+    if config_path.exists():
+        try:
+            with config_path.open("r") as config_file:
+                return json.load(config_file)
+        except:
+            print("Failed to load configuration")
+    return {}
+
+def save_config(config):
+    config_path = get_config_path()
+    try:
+        with open(config_path, "w") as config_file:
+            json.dump(config, config_file, indent=4)
+            print(f"Configuration saved to {config_path}")
+    except:
+        print("Failed to save configuration")
+
+def get_config_path():
+    # Create 'Config' folder in the app directory
+    config_dir = Path(__file__).parent.parent / "config"
+    config_dir.mkdir(exist_ok=True)
+    print("Config directory: ", config_dir)
+    
+    # Return the full path to the config file
+    return config_dir / "config.json"
+
 async def main() -> None:
     """
     The main entry point of the application.
@@ -310,20 +399,25 @@ async def main() -> None:
         size=btn_size
     )
 
+    # Menu definition with "Settings"
+    menu_def = [['&Menu', ['&Settings']]]
+
     # Layout creation
-    layout = []
-
-    # Adding game texts
-    for _ui_game_text in games_ui_texts:
-        layout.append([_ui_game_text])
-
-    # Adding buttons
-    layout.append([result_ui])
-    layout.append([send_reaction_message_button, play_by_reactions_button])
-    layout.append([announce_button])
-    layout.append([last_game_result_ui])
-    layout.append([win, lose])
-    layout.append([win_lose_msg])
+    layout = [
+        [sg.Menu(menu_def)],
+        [[sg.Text(
+            game,
+            text_color=fg_color,
+            font=font,
+            background_color=bg_color,
+            key=game
+        )] for game in games],
+        [result_ui],
+        [send_reaction_message_button, play_by_reactions_button, announce_button],
+        [last_game_result_ui],
+        [win, lose],
+        [win_lose_msg]
+    ]
 
     # Applications main window setup
     main_window = sg.Window(
@@ -346,18 +440,18 @@ async def main() -> None:
         if event == "W":
             win_lose_msg.update("\nYOU ARE THE BEST")
             db.insert_log_into_database(event)
-            change_last_spin_insertion_visibility(main_window, db, False)
+            change_last_spin_insertion_visibility(main_window, db, visible=False)
             continue
-        elif event == "L":
+        if event == "L":
             win_lose_msg.update("\nYOU SUCK")
             db.insert_log_into_database(event)
-            change_last_spin_insertion_visibility(main_window, db, False)
+            change_last_spin_insertion_visibility(main_window, db, visible=False)
             continue
-        elif event == "SEND REACTION":
+        if event == "SEND REACTION":
             rolled_game = None
             message_id = await bot.send_message("Let's spin the wheel of luck! Who's in?")
             continue
-        elif event == "PLAY REACTION":
+        if event == "PLAY REACTION":
             # Check that there is a message already sent in the DC chat
             if message_id is None:
                 print("You have to send a reaction message first.")
@@ -404,14 +498,16 @@ async def main() -> None:
             # Show insertion
             change_last_spin_insertion_visibility(main_window, db, True)
             continue
-        elif event == "ANNOUNCE":
+        if event == "ANNOUNCE":
             if rolled_game is not None:
                 # Call Discord Bot to announce the game that has been rolled
                 await bot.send_message(
                     "Going to play " + rolled_game.Get() + ", anyone wanna join in?"
                 )
             continue
-        elif event == sg.WIN_CLOSED:
+        if event == "Settings":
+            await open_settings_window(font, bg_color, fg_color)
+        if event == sg.WIN_CLOSED:
             # Properly shutting down the bot and its loop
             await bot.logout()
             # Wait for the logout operation to end, closing the discord bot thread
