@@ -30,11 +30,20 @@ Dependencies:
 import random
 import asyncio
 import PySimpleGUI as sg
-from pathlib import Path
-import json
 
 from discord_bot import DiscordBot
 from db_handler import DbHandler
+from utils import load_config, save_config
+
+# Colors
+bg_color = "Black"
+fg_color = "White"
+btn_color = "Green"
+btn_mouseover_color = "DarkGreen"
+btn_size = (7, 0)
+
+# Fonts
+font = ("Arial", 18)
 
 def remove_unwated_games(
         game_ui_texts: list[sg.Text],
@@ -269,34 +278,52 @@ async def open_settings_window(font: str, bg_color: str, fg_color: str):
         await asyncio.sleep(0.1)
     settings_window.close()
 
-def load_config():
-    """Load configuration from the config file."""
-    config_path = get_config_path()
-    if config_path.exists():
-        try:
-            with config_path.open("r") as config_file:
-                return json.load(config_file)
-        except:
-            print("Failed to load configuration")
-    return {}
+def update_games_ui(window: sg.Window, db: DbHandler, games_ui_texts: list[sg.Text]) -> list[sg.Text]:
+    """
+    Updates the games list in the UI based on the database connection status.
 
-def save_config(config):
-    config_path = get_config_path()
-    try:
-        with open(config_path, "w") as config_file:
-            json.dump(config, config_file, indent=4)
-            print(f"Configuration saved to {config_path}")
-    except:
-        print("Failed to save configuration")
+    Parameters:
+        window (sg.Window): The main UI window.
+        db (DbHandler): The database handler.
+        games_ui_texts (list[sg.Text]): The current list of game UI texts.
 
-def get_config_path():
-    # Create 'Config' folder in the app directory
-    config_dir = Path(__file__).parent.parent / "config"
-    config_dir.mkdir(exist_ok=True)
-    print("Config directory: ", config_dir)
-    
-    # Return the full path to the config file
-    return config_dir / "config.json"
+    Returns:
+        list[sg.Text]: The updated list of game UI texts.
+    """
+    # Clear the existing games list
+    for game_ui_text in games_ui_texts:
+        window[game_ui_text.key].update(visible=False)
+
+    if db.is_connected:
+        # Load games from the database
+        games = db.get_list_of_games()
+        games_ui_texts = [
+            sg.Text(
+                game,
+                text_color=fg_color,
+                font=font,
+                background_color=bg_color,
+                key=game
+            ) for game in games
+        ]
+    else:
+        # Show a message if not connected to the database
+        games_ui_texts = [
+            sg.Text(
+                "Please connect to the database.",
+                text_color=fg_color,
+                font=font,
+                background_color=bg_color,
+                key="no_db_connection"
+            )
+        ]
+
+    # Update the games list in the UI
+    for game_ui_text in games_ui_texts:
+        window[game_ui_text.key].update(visible=True)
+
+    window.refresh()
+    return games_ui_texts
 
 async def main() -> None:
     """
@@ -321,23 +348,37 @@ async def main() -> None:
     # Wait for the bot to be ready
     await bot.wait_until_ready()
 
-    # All the playable games
-    games = db.get_list_of_games()
+    if db.is_connected:
+        # All the playable games
+        games = db.get_list_of_games()
+        last_game_result = db.get_last_spin_string()
+        is_last_spin_inserted, _ = db.is_last_spin_inserted()
+        games_ui_texts = []
 
-    # Colors
-    bg_color = "Black"
-    fg_color = "White"
-    btn_color = "Green"
-    btn_mouseover_color = "DarkGreen"
-    btn_size = (7, 0)
+        for _game in games:
+            games_ui_texts.append(sg.Text(
+                _game,
+                text_color=fg_color,
+                font=font,
+                background_color=bg_color,
+                key=_game
+            ))
+    else:
+        games = [
+            "No games available. Please connect to the database."
+        ]
+        games_ui_texts = [
+            sg.Text(
+                "Please connect to the database.",
+                text_color=fg_color,
+                font=font,
+                background_color=bg_color
+            )
+        ]
+        last_game_result = "No game played yet."
+        is_last_spin_inserted = True
 
-    # Fonts
-    font = ("Arial", 18)
-
-    # Texts
-    result_ui = sg.Text("", text_color=fg_color, background_color=bg_color, font=font)
-    last_game_result = db.get_last_spin_string()
-    is_last_spin_inserted, _ = db.is_last_spin_inserted()
+    # UI texts
     last_game_result_ui = sg.Text(
         f"\nLast game result? \n({last_game_result})",
         text_color=fg_color,
@@ -346,19 +387,8 @@ async def main() -> None:
         key="LAST_GAME",
         visible= not is_last_spin_inserted
     )
-
+    result_ui = sg.Text("", text_color=fg_color, background_color=bg_color, font=font)
     win_lose_msg = sg.Text("", text_color=fg_color, background_color=bg_color, font=font)
-
-    games_ui_texts = []
-
-    for _game in games:
-        games_ui_texts.append(sg.Text(
-            _game,
-            text_color=fg_color,
-            font=font,
-            background_color=bg_color,
-            key=_game
-        ))
 
     # Buttons
     win = sg.Button(
@@ -507,6 +537,7 @@ async def main() -> None:
             continue
         if event == "Settings":
             await open_settings_window(font, bg_color, fg_color)
+            db.__init__()
         if event == sg.WIN_CLOSED:
             # Properly shutting down the bot and its loop
             await bot.logout()
