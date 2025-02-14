@@ -29,28 +29,39 @@ Dependencies:
 
 import random
 import asyncio
-import PySimpleGUI
+import PySimpleGUI as sg
 
 from discord_bot import DiscordBot
 from db_handler import DbHandler
+from utils import load_config, save_config
+
+# Colors
+bg_color = "Black"
+fg_color = "White"
+btn_color = "Green"
+btn_mouseover_color = "DarkGreen"
+btn_size = (7, 0)
+
+# Fonts
+font = ("Arial", 18)
 
 def remove_unwated_games(
-        game_ui_texts: list[PySimpleGUI.Text],
+        game_ui_texts: list[sg.Text],
         games: list[str],
-        window: PySimpleGUI.Window,
+        window: sg.Window,
         common_games: list[str]
-    ) -> tuple[list[PySimpleGUI.Text], list[str]]:
+    ) -> tuple[list[sg.Text], list[str]]:
     """
     Hides every game in the wheels UI that isn't mentioned in the `common_games` parameter.
 
     Parameters:
-        games_ui_texts (PySimpleGUI.Text): UI texts of all the game names.
+        games_ui_texts (sg.Text): UI texts of all the game names.
         games (list[Game]): A list of all games represented by Game objects.
-        window (PySimpleGUI.Window): The main UI window of the application.
+        window (sg.Window): The main UI window of the application.
         common_games (list[string]): A list of game names that the players have in common.
 
     Returns:
-        list[PySimpleGUI.Text]:
+        list[sg.Text]:
             Contains all UI texts of games that will be visible during the spin.
         list[Game]:
             Contains all the Game objects with the game names that the players have in common.
@@ -71,15 +82,15 @@ def remove_unwated_games(
     return wanted_game_ui_texts, wanted_games
 
 def make_all_games_texts_visible(
-        games_ui_texts: list[PySimpleGUI.Text],
-        window: PySimpleGUI.Window
+        games_ui_texts: list[sg.Text],
+        window: sg.Window
         ) -> None:
     """
     Makes vibisle all UI game name texts in the main window of the application.
 
     Parameters:
-        games_ui_texts (PySimpleGUI.Text): UI texts of all the game names.
-        window (PySimpleGUI.Window): The main UI window of the application.
+        games_ui_texts (sg.Text): UI texts of all the game names.
+        window (sg.Window): The main UI window of the application.
 
     Returns:
         None
@@ -88,12 +99,12 @@ def make_all_games_texts_visible(
         # Get() function here gets the actuall string text of the ui_text
         window[_text.Get()].Update(visible = True)
 
-def whiten_game_ui_text(games_ui_texts: list[PySimpleGUI.Text]) -> None:
+def whiten_game_ui_text(games_ui_texts: list[sg.Text]) -> None:
     """
     Makes the text of all UI texts white
 
     Parameters:
-        games_ui_texts (PySimpleGUI.Text): UI texts of all the game names.
+        games_ui_texts (sg.Text): UI texts of all the game names.
 
     Returns:
         None
@@ -117,11 +128,11 @@ def choose_winning_game(games: list[str]) -> str:
     return winning_games[0]
 
 async def spin_wheel(
-        games_ui_texts: list[PySimpleGUI.Text],
+        games_ui_texts: list[sg.Text],
         games: list[str],
-        main_window: PySimpleGUI.Window,
-        result_ui: PySimpleGUI.Text
-        ) -> PySimpleGUI.Text:
+        main_window: sg.Window,
+        result_ui: sg.Text
+        ) -> sg.Text:
     """
     The whole wheel spinning logic is in this function.
     
@@ -129,13 +140,13 @@ async def spin_wheel(
     slowing down until a certain spin speed and rolled game is reached.
 
     Parameters:
-        games_ui_texts (PySimpleGUI.Text): UI texts of all game names.
+        games_ui_texts (sg.Text): UI texts of all game names.
         games (list[Game]): A list of games represented by Game objects.
-        window (PySimpleGUI.Window): The main UI window of the application.
-        result_ui (PySimpleGUI.Text): The UI text object where the spin result will be shown.
+        window (sg.Window): The main UI window of the application.
+        result_ui (sg.Text): The UI text object where the spin result will be shown.
 
     Returns:
-        PySimpleGUI.Text: The changed `result_ui` object containing the name of the resulting game.
+        sg.Text: The changed `result_ui` object containing the name of the resulting game.
     """
     # Start with all games whitened.
     whiten_game_ui_text(games_ui_texts)
@@ -185,13 +196,13 @@ async def spin_wheel(
 
     return rolled_game_ui_text
 
-def change_last_spin_insertion_visibility(window: PySimpleGUI.Window, db: DbHandler, visible: bool):
+def change_last_spin_insertion_visibility(window: sg.Window, db: DbHandler, visible: bool):
     """
     Handles visibility of the corresponding UI elements taking care of last spin
     insertion into the DB. 
 
     Parameters:
-        window (PySimpleGUI.Window):
+        window (sg.Window):
             The main UI window of the application.
         db (pymongo.mongo_client.MongoClient):
             An instance of a MongoClient connected to the specified database.
@@ -208,6 +219,111 @@ def change_last_spin_insertion_visibility(window: PySimpleGUI.Window, db: DbHand
         window["LAST_GAME"].Update(value=db.get_last_spin_string())
 
     window.refresh()
+
+# Settings Window Function
+async def open_settings_window(font: str, bg_color: str, fg_color: str):
+    # Load existing config
+    config = load_config()
+
+    # Default values for textboxes (use existing config values if available)
+    dc_token = config.get("DISCORD_BOT_TOKEN", "")
+    channel_id = config.get("CHANNEL_ID", "")
+    db_connection = config.get("DB_CONNECTION_STRING", "")
+
+    text_size = (15, 1)
+    settings_layout = [
+        [sg.Text(
+            "Discord bot token:",
+            size=text_size,
+            font=font,
+            background_color=bg_color,
+            text_color=fg_color
+            ), sg.InputText(default_text=dc_token, key='dc_token')],
+        [sg.Text(
+            "Channel ID:",
+            size=text_size,
+            font=font,
+            background_color=bg_color,
+            text_color=fg_color
+            ), sg.InputText(default_text=channel_id ,key='channel_id')],
+        [sg.Text(
+            "MongoDB:",
+            size=text_size,
+            font=font,
+            background_color=bg_color,
+            text_color=fg_color
+            ), sg.InputText(default_text=db_connection ,key='db_connection')],
+        [sg.Button("Save", button_color="Green"), sg.Button("Cancel", button_color="Red")]
+    ]
+    settings_window = sg.Window(
+        "Settings",
+        layout=settings_layout,
+        modal=True,
+        background_color=bg_color
+    )
+    while True:
+        event, values = settings_window.read(timeout=100)
+        if event == "Save":
+            config = {
+                "DISCORD_BOT_TOKEN": values['dc_token'],
+                "CHANNEL_ID": values['channel_id'],
+                "DB_CONNECTION_STRING": values['db_connection']
+            }
+            print("Settings to be saved:", config)
+            save_config(config)
+            break
+        elif event == sg.WIN_CLOSED or event == "Cancel":
+            break
+        # Yield control back to the event loop
+        await asyncio.sleep(0.1)
+    settings_window.close()
+
+def update_games_ui(window: sg.Window, db: DbHandler, games_ui_texts: list[sg.Text]) -> list[sg.Text]:
+    """
+    Updates the games list in the UI based on the database connection status.
+
+    Parameters:
+        window (sg.Window): The main UI window.
+        db (DbHandler): The database handler.
+        games_ui_texts (list[sg.Text]): The current list of game UI texts.
+
+    Returns:
+        list[sg.Text]: The updated list of game UI texts.
+    """
+    # Clear the existing games list
+    for game_ui_text in games_ui_texts:
+        window[game_ui_text.key].update(visible=False)
+
+    if db.is_connected:
+        # Load games from the database
+        games = db.get_list_of_games()
+        games_ui_texts = [
+            sg.Text(
+                game,
+                text_color=fg_color,
+                font=font,
+                background_color=bg_color,
+                key=game
+            ) for game in games
+        ]
+    else:
+        # Show a message if not connected to the database
+        games_ui_texts = [
+            sg.Text(
+                "Please connect to the database.",
+                text_color=fg_color,
+                font=font,
+                background_color=bg_color,
+                key="no_db_connection"
+            )
+        ]
+
+    # Update the games list in the UI
+    for game_ui_text in games_ui_texts:
+        window[game_ui_text.key].update(visible=True)
+
+    window.refresh()
+    return games_ui_texts
 
 async def main() -> None:
     """
@@ -232,24 +348,38 @@ async def main() -> None:
     # Wait for the bot to be ready
     await bot.wait_until_ready()
 
-    # All the playable games
-    games = db.get_list_of_games()
+    if db.is_connected:
+        # All the playable games
+        games = db.get_list_of_games()
+        last_game_result = db.get_last_spin_string()
+        is_last_spin_inserted, _ = db.is_last_spin_inserted()
+        games_ui_texts = []
 
-    # Colors
-    bg_color = "Black"
-    fg_color = "White"
-    btn_color = "Green"
-    btn_mouseover_color = "DarkGreen"
-    btn_size = (7, 0)
+        for _game in games:
+            games_ui_texts.append(sg.Text(
+                _game,
+                text_color=fg_color,
+                font=font,
+                background_color=bg_color,
+                key=_game
+            ))
+    else:
+        games = [
+            "No games available. Please connect to the database."
+        ]
+        games_ui_texts = [
+            sg.Text(
+                "Please connect to the database.",
+                text_color=fg_color,
+                font=font,
+                background_color=bg_color
+            )
+        ]
+        last_game_result = "No game played yet."
+        is_last_spin_inserted = True
 
-    # Fonts
-    font = ("Arial", 18)
-
-    # Texts
-    result_ui = PySimpleGUI.Text("", text_color=fg_color, background_color=bg_color, font=font)
-    last_game_result = db.get_last_spin_string()
-    is_last_spin_inserted, _ = db.is_last_spin_inserted()
-    last_game_result_ui = PySimpleGUI.Text(
+    # UI texts
+    last_game_result_ui = sg.Text(
         f"\nLast game result? \n({last_game_result})",
         text_color=fg_color,
         background_color=bg_color,
@@ -257,22 +387,11 @@ async def main() -> None:
         key="LAST_GAME",
         visible= not is_last_spin_inserted
     )
-
-    win_lose_msg = PySimpleGUI.Text("", text_color=fg_color, background_color=bg_color, font=font)
-
-    games_ui_texts = []
-
-    for _game in games:
-        games_ui_texts.append(PySimpleGUI.Text(
-            _game,
-            text_color=fg_color,
-            font=font,
-            background_color=bg_color,
-            key=_game
-        ))
+    result_ui = sg.Text("", text_color=fg_color, background_color=bg_color, font=font)
+    win_lose_msg = sg.Text("", text_color=fg_color, background_color=bg_color, font=font)
 
     # Buttons
-    win = PySimpleGUI.Button(
+    win = sg.Button(
         "W",
         button_color=btn_color,
         font=font,
@@ -280,7 +399,7 @@ async def main() -> None:
         size=btn_size,
         visible=not is_last_spin_inserted
     )
-    lose = PySimpleGUI.Button(
+    lose = sg.Button(
         "L",
         button_color=btn_color,
         font=font,
@@ -288,21 +407,21 @@ async def main() -> None:
         size=btn_size,
         visible=not is_last_spin_inserted
     )
-    announce_button = PySimpleGUI.Button(
+    announce_button = sg.Button(
         "ANNOUNCE",
         button_color=btn_color,
         font=font,
         mouseover_colors=btn_mouseover_color,
         size=btn_size
     )
-    send_reaction_message_button = PySimpleGUI.Button(
+    send_reaction_message_button = sg.Button(
         "SEND REACTION",
         button_color=btn_color,
         font=font,
         mouseover_colors=btn_mouseover_color,
         size=btn_size
     )
-    play_by_reactions_button = PySimpleGUI.Button(
+    play_by_reactions_button = sg.Button(
         "PLAY REACTION",
         button_color=btn_color,
         font=font,
@@ -310,23 +429,28 @@ async def main() -> None:
         size=btn_size
     )
 
+    # Menu definition with "Settings"
+    menu_def = [['&Menu', ['&Settings']]]
+
     # Layout creation
-    layout = []
-
-    # Adding game texts
-    for _ui_game_text in games_ui_texts:
-        layout.append([_ui_game_text])
-
-    # Adding buttons
-    layout.append([result_ui])
-    layout.append([send_reaction_message_button, play_by_reactions_button])
-    layout.append([announce_button])
-    layout.append([last_game_result_ui])
-    layout.append([win, lose])
-    layout.append([win_lose_msg])
+    layout = [
+        [sg.Menu(menu_def)],
+        [[sg.Text(
+            game,
+            text_color=fg_color,
+            font=font,
+            background_color=bg_color,
+            key=game
+        )] for game in games],
+        [result_ui],
+        [send_reaction_message_button, play_by_reactions_button, announce_button],
+        [last_game_result_ui],
+        [win, lose],
+        [win_lose_msg]
+    ]
 
     # Applications main window setup
-    main_window = PySimpleGUI.Window(
+    main_window = sg.Window(
         title="Wheel of Luck",
         layout=layout,
         background_color=bg_color,
@@ -346,18 +470,18 @@ async def main() -> None:
         if event == "W":
             win_lose_msg.update("\nYOU ARE THE BEST")
             db.insert_log_into_database(event)
-            change_last_spin_insertion_visibility(main_window, db, False)
+            change_last_spin_insertion_visibility(main_window, db, visible=False)
             continue
-        elif event == "L":
+        if event == "L":
             win_lose_msg.update("\nYOU SUCK")
             db.insert_log_into_database(event)
-            change_last_spin_insertion_visibility(main_window, db, False)
+            change_last_spin_insertion_visibility(main_window, db, visible=False)
             continue
-        elif event == "SEND REACTION":
+        if event == "SEND REACTION":
             rolled_game = None
             message_id = await bot.send_message("Let's spin the wheel of luck! Who's in?")
             continue
-        elif event == "PLAY REACTION":
+        if event == "PLAY REACTION":
             # Check that there is a message already sent in the DC chat
             if message_id is None:
                 print("You have to send a reaction message first.")
@@ -404,14 +528,17 @@ async def main() -> None:
             # Show insertion
             change_last_spin_insertion_visibility(main_window, db, True)
             continue
-        elif event == "ANNOUNCE":
+        if event == "ANNOUNCE":
             if rolled_game is not None:
                 # Call Discord Bot to announce the game that has been rolled
                 await bot.send_message(
                     "Going to play " + rolled_game.Get() + ", anyone wanna join in?"
                 )
             continue
-        elif event == PySimpleGUI.WIN_CLOSED:
+        if event == "Settings":
+            await open_settings_window(font, bg_color, fg_color)
+            db.__init__()
+        if event == sg.WIN_CLOSED:
             # Properly shutting down the bot and its loop
             await bot.logout()
             # Wait for the logout operation to end, closing the discord bot thread

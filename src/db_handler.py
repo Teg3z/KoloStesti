@@ -12,8 +12,9 @@ Dependencies:
 from datetime import datetime
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+from functools import wraps
 
-from env_var_loader import get_env_var_value
+from utils import load_config
 
 class Singleton(type):
     """
@@ -41,7 +42,7 @@ class DbHandler(metaclass=Singleton):
     - get_list_of_games: Returns a list of all games in the database.
     - add_game_to_game_list: Adds a new game to the game list in the database.
     """
-    def __init__(self, db_name='WheelOfLuck') -> None:
+    def __init__(self ,db_name='WheelOfLuck') -> None:
         """
         Initializes the database connection and creates the necessary collections.
         
@@ -51,19 +52,43 @@ class DbHandler(metaclass=Singleton):
         Returns:
             None
         """
-        self.db_connection_string = get_env_var_value("DB_CONNECTION_STRING")
-        self.client = MongoClient(self.db_connection_string, server_api=ServerApi('1'))
+        self.db_connection_string = load_config().get("DB_CONNECTION_STRING", "")
+        if not self.db_connection_string:
+            self.is_connected = False
+            print("Database connection string not found in config file.")
+            return
+        
+        try:
+            # Verify the connection by pinging the server using the 'admin' command
+            self.client = MongoClient(
+                self.db_connection_string,
+                server_api=ServerApi('1'),
+            )
+            self.client.admin.command('ping')
+            self.is_connected = True
+            print("Successfully connected to MongoDB!")
+        except Exception as e:
+            self.is_connected = False
+            print("Failed to connect to MongoDB: ", e)
 
-        # Verify the connection by pinging the server using the 'admin' command
-        self.client.admin.command('ping')
-        print("Successfully connected to MongoDB!")
+        if self.is_connected:
+            self.db = self.client[db_name]
+            self.last_spin_collection = self.db['LastSpin']
+            self.logs_collection = self.db['Logs']
+            self.games_collection = self.db['Games']
+            self.players_collection = self.db['Players']
 
-        self.db = self.client[db_name]
-        self.last_spin_collection = self.db['LastSpin']
-        self.logs_collection = self.db['Logs']
-        self.games_collection = self.db['Games']
-        self.players_collection = self.db['Players']
+    def requires_connection(func):
+        # Decorator to check if the database connection is established
+        @wraps(func)
+        def wrapper(self, *args: any, **kwargs: any) -> any:
+            if not self.is_connected:
+                print(f"Cannot execute {func.__name__}: No connection to the database.")
+                return
+            return func(self, *args, **kwargs)
+        return wrapper
 
+    @requires_connection
     def get_last_spin_string(self) -> str:
         """
         Returns the last spin in a formatted string.
@@ -77,6 +102,7 @@ class DbHandler(metaclass=Singleton):
         return str(entry['players']) + " - " + entry['last_game'] + \
             " [" + formatted_time + "]"
 
+    @requires_connection
     def update_last_spin(self, game: str, players: list[str]) -> None:
         """
         Updates the last spin in the database with the new game and players.
@@ -105,6 +131,7 @@ class DbHandler(metaclass=Singleton):
 
         self.last_spin_collection.update_one(id_filter, new_values)
 
+    @requires_connection
     def is_last_spin_inserted(self) -> tuple[bool, dict]:
         """
         Checks if the last spin has been inserted into the logs.
@@ -118,6 +145,7 @@ class DbHandler(metaclass=Singleton):
             return True, entry
         return False, entry
 
+    @requires_connection
     def insert_log_into_database(self, result: str) -> None:
         """
         Inserts the last spin into the logs collection.
@@ -148,6 +176,7 @@ class DbHandler(metaclass=Singleton):
 
         self.logs_collection.insert_one(post)
 
+    @requires_connection
     def get_list_of_games(self) -> list[str]:
         """
         Returns a list of all games in the database.
@@ -164,6 +193,7 @@ class DbHandler(metaclass=Singleton):
         games.sort()
         return games
 
+    @requires_connection
     def add_game_to_game_list(self, game: str) -> bool:
         """
         Adds a new game to the game list in the database.
@@ -180,6 +210,7 @@ class DbHandler(metaclass=Singleton):
         self.games_collection.insert_one({"name": game})
         return True
 
+    @requires_connection
     def remove_game_from_game_list(self, game: str) -> bool:
         """
         Removes a game from the game list in the database.
@@ -196,6 +227,7 @@ class DbHandler(metaclass=Singleton):
         self.games_collection.delete_one({"name": game})
         return True
 
+    @requires_connection
     def is_in_game_list(self, game: str) -> bool:
         """
         Checks if a game is in the game list.
@@ -211,6 +243,7 @@ class DbHandler(metaclass=Singleton):
             return False
         return True
 
+    @requires_connection
     def add_new_player(self, user_name: str) -> dict:
         """
         Adds a new player to the database.
@@ -228,6 +261,7 @@ class DbHandler(metaclass=Singleton):
         self.players_collection.insert_one(new_document)
         return new_document
 
+    @requires_connection
     def get_list_of_user_games(self, user_name: str) -> list[str]:
         """
         Returns a list of games that the user plays.
@@ -246,6 +280,7 @@ class DbHandler(metaclass=Singleton):
         user_games.sort()
         return user_games
 
+    @requires_connection
     def add_game_to_user_game_list(self, user_name: str, game: str) -> None:
         """
         Adds a game to the user's game list.
@@ -264,6 +299,7 @@ class DbHandler(metaclass=Singleton):
             {"$addToSet": {"games": game}}
         )
 
+    @requires_connection
     def remove_game_from_user_game_list(self, user_name: str, game: str) -> None:
         """
         Removes a game from the user's game list.
@@ -282,6 +318,7 @@ class DbHandler(metaclass=Singleton):
             {"$pull": {"games": game}}
         )
 
+    @requires_connection
     def create_player_if_not_exists(self, user_name: str) -> None:
         """
         Creates a new player if the player doesn't exist.
@@ -306,7 +343,7 @@ def main():
         None
     """
     db = DbHandler()
-    collection = db.get_list_of_user_games("user")
+    collection = db.get_list_of_user_games("TestUser")
 
     # Now you can perform operations on the collection, such as finding all players
     for query in collection:

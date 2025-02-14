@@ -15,3 +15,6 @@ dist/
 
 # Python environments
 venv/
+
+# Configuration files
+config.json
