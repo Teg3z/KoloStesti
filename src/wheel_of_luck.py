@@ -27,8 +27,14 @@ Dependencies:
 - Requires db_handler for all the databe operations and establishment.
 """
 
+import sys
 import random
 import asyncio
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
+    QPushButton, QMenuBar, QMenu, QLineEdit, QFrame
+)
+from PyQt6.QtCore import Qt, QTimer
 import PySimpleGUI as sg
 
 from discord_bot import DiscordBot
@@ -220,164 +226,10 @@ def change_last_spin_insertion_visibility(window: sg.Window, db: DbHandler, visi
 
     window.refresh()
 
-# Settings Window Function
-async def open_settings_window(font: str, bg_color: str, fg_color: str):
-    # Load existing config
-    config = load_config()
-
-    # Default values for textboxes (use existing config values if available)
-    dc_token = config.get("DISCORD_BOT_TOKEN", "")
-    channel_id = config.get("CHANNEL_ID", "")
-    db_connection = config.get("DB_CONNECTION_STRING", "")
-
-    text_size = (15, 1)
-    settings_layout = [
-        [sg.Text(
-            "Discord bot token:",
-            size=text_size,
-            font=font,
-            background_color=bg_color,
-            text_color=fg_color
-            ), sg.InputText(default_text=dc_token, key='dc_token')],
-        [sg.Text(
-            "Channel ID:",
-            size=text_size,
-            font=font,
-            background_color=bg_color,
-            text_color=fg_color
-            ), sg.InputText(default_text=channel_id ,key='channel_id')],
-        [sg.Text(
-            "MongoDB:",
-            size=text_size,
-            font=font,
-            background_color=bg_color,
-            text_color=fg_color
-            ), sg.InputText(default_text=db_connection ,key='db_connection')],
-        [sg.Button("Save", button_color="Green"), sg.Button("Cancel", button_color="Red")]
-    ]
-    settings_window = sg.Window(
-        "Settings",
-        layout=settings_layout,
-        modal=True,
-        background_color=bg_color
-    )
-    while True:
-        event, values = settings_window.read(timeout=100)
-        if event == "Save":
-            config = {
-                "DISCORD_BOT_TOKEN": values['dc_token'],
-                "CHANNEL_ID": values['channel_id'],
-                "DB_CONNECTION_STRING": values['db_connection']
-            }
-            print("Settings to be saved:", config)
-            save_config(config)
-            break
-        elif event == sg.WIN_CLOSED or event == "Cancel":
-            break
-        # Yield control back to the event loop
-        await asyncio.sleep(0.1)
-    settings_window.close()
-
-def update_games_ui(window: sg.Window, db: DbHandler, games_ui_texts: list[sg.Text]) -> list[sg.Text]:
-    """
-    Updates the games list in the UI based on the database connection status.
-
-    Parameters:
-        window (sg.Window): The main UI window.
-        db (DbHandler): The database handler.
-        games_ui_texts (list[sg.Text]): The current list of game UI texts.
-
-    Returns:
-        list[sg.Text]: The updated list of game UI texts.
-    """
-    # Clear the existing games list
-    for game_ui_text in games_ui_texts:
-        window[game_ui_text.key].update(visible=False)
-
-    if db.is_connected:
-        # Load games from the database
-        games = db.get_list_of_games()
-        games_ui_texts = [
-            sg.Text(
-                game,
-                text_color=fg_color,
-                font=font,
-                background_color=bg_color,
-                key=game
-            ) for game in games
-        ]
-    else:
-        # Show a message if not connected to the database
-        games_ui_texts = [
-            sg.Text(
-                "Please connect to the database.",
-                text_color=fg_color,
-                font=font,
-                background_color=bg_color,
-                key="no_db_connection"
-            )
-        ]
-
-    # Update the games list in the UI
-    for game_ui_text in games_ui_texts:
-        window[game_ui_text.key].update(visible=True)
-
-    window.refresh()
-    return games_ui_texts
-
-async def main() -> None:
-    """
-    The main entry point of the application.
-
-    Establishes connection to MongoDB database and Discord bot.
-    Sets all the UI elements and lays them out.
-    Provides all the functionality that the UI elements should posses. 
-
-    Returns:
-        None 
-    """
-    # Establish database connection
-    db = DbHandler()
-
-    # Create a new Discord bot
-    bot = DiscordBot()
-
-    # Start the Discord bot in the background
-    bot_task = asyncio.create_task(bot.run())
-
-    # Wait for the bot to be ready
-    await bot.wait_until_ready()
-
-    if db.is_connected:
-        # All the playable games
-        games = db.get_list_of_games()
-        last_game_result = db.get_last_spin_string()
-        is_last_spin_inserted, _ = db.is_last_spin_inserted()
-        games_ui_texts = []
-
-        for _game in games:
-            games_ui_texts.append(sg.Text(
-                _game,
-                text_color=fg_color,
-                font=font,
-                background_color=bg_color,
-                key=_game
-            ))
-    else:
-        games = [
-            "No games available. Please connect to the database."
-        ]
-        games_ui_texts = [
-            sg.Text(
-                "Please connect to the database.",
-                text_color=fg_color,
-                font=font,
-                background_color=bg_color
-            )
-        ]
-        last_game_result = "No game played yet."
-        is_last_spin_inserted = True
-
+async def main_old() -> None:
+    last_game_result_ui = None
+    last_game_result = None
+    is_last_spin_inserted = None
     # UI texts
     last_game_result_ui = sg.Text(
         f"\nLast game result? \n({last_game_result})",
@@ -407,13 +259,6 @@ async def main() -> None:
         size=btn_size,
         visible=not is_last_spin_inserted
     )
-    announce_button = sg.Button(
-        "ANNOUNCE",
-        button_color=btn_color,
-        font=font,
-        mouseover_colors=btn_mouseover_color,
-        size=btn_size
-    )
     send_reaction_message_button = sg.Button(
         "SEND REACTION",
         button_color=btn_color,
@@ -421,132 +266,234 @@ async def main() -> None:
         mouseover_colors=btn_mouseover_color,
         size=btn_size
     )
-    play_by_reactions_button = sg.Button(
-        "PLAY REACTION",
-        button_color=btn_color,
-        font=font,
-        mouseover_colors=btn_mouseover_color,
-        size=btn_size
-    )
-
-    # Menu definition with "Settings"
-    menu_def = [['&Menu', ['&Settings']]]
 
     # Layout creation
     layout = [
-        [sg.Menu(menu_def)],
-        [[sg.Text(
-            game,
-            text_color=fg_color,
-            font=font,
-            background_color=bg_color,
-            key=game
-        )] for game in games],
-        [result_ui],
-        [send_reaction_message_button, play_by_reactions_button, announce_button],
         [last_game_result_ui],
         [win, lose],
         [win_lose_msg]
     ]
 
-    # Applications main window setup
-    main_window = sg.Window(
-        title="Wheel of Luck",
-        layout=layout,
-        background_color=bg_color,
-        use_default_focus=False
-    )
-
     # Initiate variables
     rolled_game = None
     message_id = None
 
-    # Each iteration represents a wheel spin
-    while True:
-        # Reads values from the applications main window
-        event, _ = main_window.read(timeout=100)
+    # # Pressing W/L buttons condition
+    # if event == "W":
+    #     win_lose_msg.update("\nYOU ARE THE BEST")
+    #     db.insert_log_into_database(event)
+    #     change_last_spin_insertion_visibility(main_window, db, visible=False)
+    #     continue
+    # if event == "L":
+    #     win_lose_msg.update("\nYOU SUCK")
+    #     db.insert_log_into_database(event)
+    #     change_last_spin_insertion_visibility(main_window, db, visible=False)
+    #     continue
+    # if event == "SEND REACTION":
+    #     rolled_game = None
+    #     message_id = await bot.send_message("Let's spin the wheel of luck! Who's in?")
+    #     continue
+    # if event == "PLAY REACTION":
+    #     # Check that there is a message already sent in the DC chat
+    #     if message_id is None:
+    #         print("You have to send a reaction message first.")
+    #         continue
+    #     players = await bot.get_reaction_users(message_id)
 
-        # Pressing W/L buttons condition
-        if event == "W":
-            win_lose_msg.update("\nYOU ARE THE BEST")
-            db.insert_log_into_database(event)
-            change_last_spin_insertion_visibility(main_window, db, visible=False)
-            continue
-        if event == "L":
-            win_lose_msg.update("\nYOU SUCK")
-            db.insert_log_into_database(event)
-            change_last_spin_insertion_visibility(main_window, db, visible=False)
-            continue
-        if event == "SEND REACTION":
-            rolled_game = None
-            message_id = await bot.send_message("Let's spin the wheel of luck! Who's in?")
-            continue
-        if event == "PLAY REACTION":
-            # Check that there is a message already sent in the DC chat
-            if message_id is None:
-                print("You have to send a reaction message first.")
-                continue
-            players = await bot.get_reaction_users(message_id)
+    #     # No reaction case
+    #     if not players:
+    #         await bot.send_message("Nobody wants to participate :(")
+    #         continue
 
-            # No reaction case
-            if not players:
-                await bot.send_message("Nobody wants to participate :(")
-                continue
+    #     # Get list of games that those players have in common
+    #     is_first_player = True
+    #     for player in players:
+    #         # Inicialize the list of common games by the first player
+    #         if is_first_player:
+    #             common_games = db.get_list_of_user_games(player)
+    #             is_first_player = False
+    #             continue
+    #         # Get current players list of games
+    #         player_games = db.get_list_of_user_games(player)
+    #         # Keep only the games that are still in the common_games list
+    #         # and also in the current players list
+    #         updated_games_list = []
+    #         for game in common_games:
+    #             if game in player_games:
+    #                 updated_games_list.append(game)
+    #         common_games = updated_games_list
 
-            # Get list of games that those players have in common
-            is_first_player = True
-            for player in players:
-                # Inicialize the list of common games by the first player
-                if is_first_player:
-                    common_games = db.get_list_of_user_games(player)
-                    is_first_player = False
-                    continue
-                # Get current players list of games
-                player_games = db.get_list_of_user_games(player)
-                # Keep only the games that are still in the common_games list
-                # and also in the current players list
-                updated_games_list = []
-                for game in common_games:
-                    if game in player_games:
-                        updated_games_list.append(game)
-                common_games = updated_games_list
+    #     # Wheel setup and spinning
+    #     wanted_game_ui_texts, wanted_games = remove_unwated_games(
+    #         games_ui_texts,
+    #         games,
+    #         main_window,
+    #         common_games
+    #     )
+    #     rolled_game = await spin_wheel(
+    #         wanted_game_ui_texts,
+    #         wanted_games,
+    #         main_window,
+    #         result_ui
+    #     )
+    #     db.update_last_spin(rolled_game.Get(), players=players)
+    #     # Show insertion
+    #     change_last_spin_insertion_visibility(main_window, db, True)
+    #     continue
 
-            # Wheel setup and spinning
-            wanted_game_ui_texts, wanted_games = remove_unwated_games(
-                games_ui_texts,
-                games,
-                main_window,
-                common_games
-            )
-            rolled_game = await spin_wheel(
-                wanted_game_ui_texts,
-                wanted_games,
-                main_window,
-                result_ui
-            )
-            db.update_last_spin(rolled_game.Get(), players=players)
-            # Show insertion
-            change_last_spin_insertion_visibility(main_window, db, True)
-            continue
-        if event == "ANNOUNCE":
-            if rolled_game is not None:
-                # Call Discord Bot to announce the game that has been rolled
-                await bot.send_message(
-                    "Going to play " + rolled_game.Get() + ", anyone wanna join in?"
+class MainWindow(QMainWindow):
+    def __init__(self, db: DbHandler, bot: DiscordBot) -> None:
+        super().__init__()
+
+        self.db = db
+        self.bot = bot
+        self.games = []
+        self.rolled_game = None
+
+        self.setWindowTitle("Wheel of Luck")
+        self.setGeometry(100, 100, 600, 400)
+
+        # Create the main layout
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        self.main_layout = QVBoxLayout(self.central_widget)
+
+        # Create menu bar with Settings option
+        menu_bar = QMenuBar(self)
+        self.setMenuBar(menu_bar)
+        menu = QMenu("&Menu", self)
+        menu_bar.addMenu(menu)
+        settings_action = menu.addAction("Settings")
+        settings_action.triggered.connect(self.open_settings)
+
+        # Create UI elements
+        self.games_frame = QFrame()
+        self.games_layout = QVBoxLayout(self.games_frame)
+
+        self.result_label = QLabel("")
+        self.result_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.spin_button = QPushButton("Spin")
+        self.spin_button.clicked.connect(self.spin_wheel)
+
+        self.button_layout = QHBoxLayout()
+        self.announce_button = QPushButton("Announce")
+        self.announce_button.clicked.connect(self.announce_game)
+
+        self.button_layout.addWidget(self.spin_button)
+        self.button_layout.addWidget(self.announce_button)
+
+        # Add elements to the main layout
+        self.main_layout.addWidget(menu_bar)
+        self.main_layout.addWidget(self.games_frame)
+        self.main_layout.addWidget(self.result_label)
+        self.main_layout.addLayout(self.button_layout)
+
+        # Load initial games
+        self.update_games_list()
+
+    def update_games_list(self):
+        """ Updates the games list dynamically based on database. """
+        for i in reversed(range(self.games_layout.count())):
+            item = self.games_layout.itemAt(i)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+
+        if self.db.is_connected:
+            self.games = self.db.get_list_of_games()
+            for game in self.games:
+                game_label = QLabel(game)
+                self.games_layout.addWidget(game_label)
+        else:
+            self.games_layout.addWidget(QLabel("Please connect to the database."))
+
+    def spin_wheel(self):
+        """ Simulates spinning the wheel and selects a random game. """
+        if not self.games:
+            # TODO Warning message box
+            self.result_label.setText("No games available!")
+            return
+
+        # TODO Actually roll
+        self.rolled_game = random.choice(self.games)
+        self.result_label.setText(f"🎉 Enjoy {self.rolled_game}!")
+
+    def announce_game(self):
+        """ Announces the rolled game via the Discord bot. """
+        if self.rolled_game:
+            asyncio.create_task(
+                self.bot.send_message(
+                    f"Going to play {self.rolled_game}, anyone wanna join in?"
                 )
-            continue
-        if event == "Settings":
-            await open_settings_window(font, bg_color, fg_color)
-            db.__init__()
-        if event == sg.WIN_CLOSED:
-            # Properly shutting down the bot and its loop
-            await bot.logout()
-            # Wait for the logout operation to end, closing the discord bot thread
-            await bot_task
-            main_window.close()
-            break
-        # Yield control back to the event loop
-        await asyncio.sleep(0.1)
+            )
+
+    def open_settings(self):
+        """ Opens the settings window. """
+        self.settings_window = SettingsWindow(self)
+        self.settings_window.show()
+
+class SettingsWindow(QWidget):
+    def __init__(self, main_window: MainWindow) -> None:
+        super().__init__()
+
+        self.main_window = main_window
+        self.setWindowTitle("Settings")
+        self.setGeometry(200, 200, 300, 200)
+
+        layout = QVBoxLayout(self)
+
+        self.dc_token_input = QLineEdit(load_config().get("DISCORD_BOT_TOKEN", ""))
+        self.channel_id_input = QLineEdit(load_config().get("CHANNEL_ID", ""))
+        self.db_connection_input = QLineEdit(load_config().get("DB_CONNECTION_STRING", ""))
+
+        layout.addWidget(QLabel("Discord Bot Token:"))
+        layout.addWidget(self.dc_token_input)
+        layout.addWidget(QLabel("Channel ID:"))
+        layout.addWidget(self.channel_id_input)
+        layout.addWidget(QLabel("Database Connection String:"))
+        layout.addWidget(self.db_connection_input)
+
+        save_button = QPushButton("Save")
+        save_button.clicked.connect(self.save_settings)
+        layout.addWidget(save_button)
+
+    def save_settings(self):
+        """ Saves settings and updates the database connection. """
+        config = {
+            "DISCORD_BOT_TOKEN": self.dc_token_input.text(),
+            "CHANNEL_ID": self.channel_id_input.text(),
+            "DB_CONNECTION_STRING": self.db_connection_input.text()
+        }
+        save_config(config)
+
+        # Reinitialize the database connection
+        # TODO dont reinitialize if db havent changed
+        self.main_window.db.__init__()
+        self.main_window.update_games_list()
+
+        self.close()
+
+async def main():
+    """ Runs the PyQt application. """
+    app = QApplication(sys.argv)
+
+    # Establish database connection
+    db = DbHandler()
+
+    # Create a new Discord bot
+    bot = DiscordBot()
+
+    # Start the Discord bot in the background
+    bot_task = asyncio.create_task(bot.run())
+
+    # Wait for the bot to be ready
+    await bot.wait_until_ready()
+
+    main_window = MainWindow(db, bot)
+    main_window.show()
+
+    sys.exit(app.exec())
 
 if __name__ == "__main__":
     # Create an event loop for the main function
