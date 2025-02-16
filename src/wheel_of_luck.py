@@ -349,6 +349,11 @@ class MainWindow(QMainWindow):
         self.bot = bot
         self.games = []
         self.rolled_game = None
+        self.previous_index = None
+        self.current_index = 0
+        self.timer = QTimer()
+        self.spin_speed = 10
+        self.slowdown_factor = 15
 
         self.setWindowTitle("Wheel of Luck")
         self.setGeometry(100, 100, 600, 400)
@@ -374,7 +379,7 @@ class MainWindow(QMainWindow):
         self.result_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.spin_button = QPushButton("Spin")
-        self.spin_button.clicked.connect(self.spin_wheel)
+        self.spin_button.clicked.connect(self.start_spin_wheel)
 
         self.button_layout = QHBoxLayout()
         self.announce_button = QPushButton("Announce")
@@ -408,16 +413,51 @@ class MainWindow(QMainWindow):
         else:
             self.games_layout.addWidget(QLabel("Please connect to the database."))
 
-    def spin_wheel(self):
-        """ Simulates spinning the wheel and selects a random game. """
+    def start_spin_wheel(self):
+        """ Starts the spinning animation. """
         if not self.games:
-            # TODO Warning message box
             self.result_label.setText("No games available!")
             return
 
-        # TODO Actually roll
+        # Whiten all games
+        for i in range(self.games_layout.count()):
+            label: QLabel = self.games_layout.itemAt(i).widget()
+            label.setStyleSheet("color: white;")
+
         self.rolled_game = random.choice(self.games)
-        self.result_label.setText(f"🎉 Enjoy {self.rolled_game}!")
+        self.previous_index = None
+        self.current_index = 0
+        self.spin_speed = 10
+        self.timer.timeout.connect(self.spin_step)
+        self.timer.start(self.spin_speed)
+
+    def spin_step(self):
+        """ Spins the wheel by highlighting one game at a time. """
+        if not self.games_layout:
+            return
+
+        # Reset previous selection to white
+        if self.previous_index is not None:
+            curr_game_label: QLabel = self.games_layout.itemAt(self.previous_index).widget()
+            curr_game_label.setStyleSheet("color: white;")
+
+        # Highlight the current game in green
+        curr_game_label = self.games_layout.itemAt(self.current_index).widget()
+        curr_game_label.setStyleSheet("color: lime;")
+
+        # Move to the next game (circular loop)
+        self.previous_index = self.current_index
+        self.current_index = (self.current_index + 1) % self.games_layout.count()
+
+        # Stop spinning and announce the winner
+        if self.spin_speed > 300 and curr_game_label.text() == self.rolled_game:
+            self.timer.stop()
+            self.timer.timeout.disconnect()
+            self.result_label.setText(f"🎉 Enjoy {self.rolled_game}!")
+        # Continue spinning
+        else:
+            self.spin_speed = self.spin_speed + self.slowdown_factor
+            self.timer.start(self.spin_speed)
 
     def announce_game(self):
         """ Announces the rolled game via the Discord bot. """
